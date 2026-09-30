@@ -1,0 +1,1191 @@
+[
+  {
+    "id": "farm",
+    "path": "/assets/v2/farm.webp",
+    "width": 1672,
+    "height": 941,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/farm.png",
+    "region": null,
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "workshop",
+    "path": "/assets/v2/workshop.webp",
+    "width": 1672,
+    "height": 940,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/workshop.png",
+    "region": null,
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "battle",
+    "path": "/assets/v2/battle.webp",
+    "width": 1536,
+    "height": 1024,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/battle.png",
+    "region": null,
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "cultivate",
+    "path": "/assets/v2/cultivate.webp",
+    "width": 1672,
+    "height": 941,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/cultivate.png",
+    "region": null,
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "village",
+    "path": "/assets/v2/village.webp",
+    "width": 1672,
+    "height": 941,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/village.png",
+    "region": null,
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "comic",
+    "path": "/assets/v2/comic.webp",
+    "width": 1536,
+    "height": 1024,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/comic.png",
+    "region": null,
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-0",
+    "path": "/assets/v2/icon-0.png",
+    "width": 148,
+    "height": 144,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      0,
+      0,
+      256,
+      174
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-1",
+    "path": "/assets/v2/icon-1.png",
+    "width": 186,
+    "height": 167,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      256,
+      0,
+      512,
+      174
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-2",
+    "path": "/assets/v2/icon-2.png",
+    "width": 214,
+    "height": 174,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      512,
+      0,
+      768,
+      174
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-3",
+    "path": "/assets/v2/icon-3.png",
+    "width": 155,
+    "height": 155,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      768,
+      0,
+      1024,
+      174
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-4",
+    "path": "/assets/v2/icon-4.png",
+    "width": 235,
+    "height": 158,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1024,
+      0,
+      1280,
+      174
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-5",
+    "path": "/assets/v2/icon-5.png",
+    "width": 220,
+    "height": 168,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1280,
+      0,
+      1536,
+      174
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-6",
+    "path": "/assets/v2/icon-6.png",
+    "width": 156,
+    "height": 177,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      0,
+      174,
+      215,
+      351
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-7",
+    "path": "/assets/v2/icon-7.png",
+    "width": 191,
+    "height": 182,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      215,
+      174,
+      435,
+      351
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-8",
+    "path": "/assets/v2/icon-8.png",
+    "width": 173,
+    "height": 176,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      435,
+      174,
+      610,
+      351
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-9",
+    "path": "/assets/v2/icon-9.png",
+    "width": 210,
+    "height": 133,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      610,
+      174,
+      815,
+      351
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-10",
+    "path": "/assets/v2/icon-10.png",
+    "width": 208,
+    "height": 143,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      815,
+      174,
+      1050,
+      351
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-11",
+    "path": "/assets/v2/icon-11.png",
+    "width": 241,
+    "height": 164,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1050,
+      174,
+      1320,
+      351
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-12",
+    "path": "/assets/v2/icon-12.png",
+    "width": 177,
+    "height": 138,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1320,
+      174,
+      1536,
+      351
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-13",
+    "path": "/assets/v2/icon-13.png",
+    "width": 191,
+    "height": 177,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      0,
+      351,
+      205,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-14",
+    "path": "/assets/v2/icon-14.png",
+    "width": 188,
+    "height": 158,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      205,
+      351,
+      395,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-15",
+    "path": "/assets/v2/icon-15.png",
+    "width": 178,
+    "height": 177,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      395,
+      351,
+      580,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-16",
+    "path": "/assets/v2/icon-16.png",
+    "width": 169,
+    "height": 171,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      580,
+      351,
+      785,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-17",
+    "path": "/assets/v2/icon-17.png",
+    "width": 162,
+    "height": 133,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      785,
+      351,
+      970,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-18",
+    "path": "/assets/v2/icon-18.png",
+    "width": 139,
+    "height": 185,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      970,
+      351,
+      1155,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-19",
+    "path": "/assets/v2/icon-19.png",
+    "width": 168,
+    "height": 174,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1155,
+      351,
+      1330,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-20",
+    "path": "/assets/v2/icon-20.png",
+    "width": 201,
+    "height": 123,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1330,
+      351,
+      1536,
+      525
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-21",
+    "path": "/assets/v2/icon-21.png",
+    "width": 150,
+    "height": 178,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      0,
+      525,
+      280,
+      689
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-22",
+    "path": "/assets/v2/icon-22.png",
+    "width": 160,
+    "height": 179,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      280,
+      525,
+      520,
+      689
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-23",
+    "path": "/assets/v2/icon-23.png",
+    "width": 182,
+    "height": 178,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      520,
+      525,
+      780,
+      689
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-24",
+    "path": "/assets/v2/icon-24.png",
+    "width": 151,
+    "height": 172,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      780,
+      525,
+      1010,
+      689
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-25",
+    "path": "/assets/v2/icon-25.png",
+    "width": 171,
+    "height": 163,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1010,
+      525,
+      1260,
+      689
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-26",
+    "path": "/assets/v2/icon-26.png",
+    "width": 283,
+    "height": 169,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      0,
+      689,
+      300,
+      850
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-27",
+    "path": "/assets/v2/icon-27.png",
+    "width": 247,
+    "height": 167,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      300,
+      689,
+      605,
+      850
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-28",
+    "path": "/assets/v2/icon-28.png",
+    "width": 252,
+    "height": 162,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      605,
+      689,
+      890,
+      850
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-29",
+    "path": "/assets/v2/icon-29.png",
+    "width": 215,
+    "height": 172,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      890,
+      689,
+      1220,
+      850
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-30",
+    "path": "/assets/v2/icon-30.png",
+    "width": 191,
+    "height": 170,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1220,
+      689,
+      1536,
+      850
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-31",
+    "path": "/assets/v2/icon-31.png",
+    "width": 174,
+    "height": 165,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      0,
+      850,
+      300,
+      1024
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-32",
+    "path": "/assets/v2/icon-32.png",
+    "width": 187,
+    "height": 166,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      300,
+      850,
+      610,
+      1024
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-33",
+    "path": "/assets/v2/icon-33.png",
+    "width": 245,
+    "height": 175,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      610,
+      850,
+      910,
+      1024
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-34",
+    "path": "/assets/v2/icon-34.png",
+    "width": 292,
+    "height": 172,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      910,
+      850,
+      1235,
+      1024
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "icon-35",
+    "path": "/assets/v2/icon-35.png",
+    "width": 177,
+    "height": 173,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/icons.png",
+    "region": [
+      1235,
+      850,
+      1536,
+      1024
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-0-0",
+    "path": "/assets/v2/person-0-0.webp",
+    "width": 407,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      0,
+      0,
+      407,
+      429
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-0-1",
+    "path": "/assets/v2/person-0-1.webp",
+    "width": 408,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      407,
+      0,
+      815,
+      429
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-0-2",
+    "path": "/assets/v2/person-0-2.webp",
+    "width": 407,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      815,
+      0,
+      1222,
+      429
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-1-0",
+    "path": "/assets/v2/person-1-0.webp",
+    "width": 407,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      0,
+      429,
+      407,
+      858
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-1-1",
+    "path": "/assets/v2/person-1-1.webp",
+    "width": 408,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      407,
+      429,
+      815,
+      858
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-1-2",
+    "path": "/assets/v2/person-1-2.webp",
+    "width": 407,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      815,
+      429,
+      1222,
+      858
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-2-0",
+    "path": "/assets/v2/person-2-0.webp",
+    "width": 407,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      0,
+      858,
+      407,
+      1287
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-2-1",
+    "path": "/assets/v2/person-2-1.webp",
+    "width": 408,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      407,
+      858,
+      815,
+      1287
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "person-2-2",
+    "path": "/assets/v2/person-2-2.webp",
+    "width": 407,
+    "height": 429,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/people.png",
+    "region": [
+      815,
+      858,
+      1222,
+      1287
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "hero-female",
+    "path": "/assets/v2/hero-female.png",
+    "width": 276,
+    "height": 594,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/heroes.png",
+    "region": [
+      0,
+      0,
+      656,
+      600
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "hero-male",
+    "path": "/assets/v2/hero-male.png",
+    "width": 322,
+    "height": 613,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/heroes.png",
+    "region": [
+      656,
+      0,
+      1312,
+      600
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "meditate-female",
+    "path": "/assets/v2/meditate-female.png",
+    "width": 459,
+    "height": 427,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/heroes.png",
+    "region": [
+      0,
+      600,
+      656,
+      1199
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "meditate-male",
+    "path": "/assets/v2/meditate-male.png",
+    "width": 515,
+    "height": 462,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/heroes.png",
+    "region": [
+      656,
+      600,
+      1312,
+      1199
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "ui-0",
+    "path": "/assets/v2/ui-0.png",
+    "width": 616,
+    "height": 299,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/ui.png",
+    "region": [
+      0,
+      0,
+      768,
+      512
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "ui-1",
+    "path": "/assets/v2/ui-1.png",
+    "width": 616,
+    "height": 350,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/ui.png",
+    "region": [
+      768,
+      0,
+      1536,
+      512
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "ui-2",
+    "path": "/assets/v2/ui-2.png",
+    "width": 616,
+    "height": 201,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/ui.png",
+    "region": [
+      0,
+      512,
+      768,
+      1024
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "ui-3",
+    "path": "/assets/v2/ui-3.png",
+    "width": 616,
+    "height": 390,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/ui.png",
+    "region": [
+      768,
+      512,
+      1536,
+      1024
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-0",
+    "path": "/assets/v2/fx-0.png",
+    "width": 420,
+    "height": 393,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      0,
+      0,
+      444,
+      444
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-1",
+    "path": "/assets/v2/fx-1.png",
+    "width": 417,
+    "height": 422,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      444,
+      0,
+      887,
+      444
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-2",
+    "path": "/assets/v2/fx-2.png",
+    "width": 406,
+    "height": 408,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      887,
+      0,
+      1330,
+      444
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-3",
+    "path": "/assets/v2/fx-3.png",
+    "width": 421,
+    "height": 427,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      1330,
+      0,
+      1774,
+      444
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-4",
+    "path": "/assets/v2/fx-4.png",
+    "width": 419,
+    "height": 436,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      0,
+      444,
+      444,
+      887
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-5",
+    "path": "/assets/v2/fx-5.png",
+    "width": 412,
+    "height": 401,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      444,
+      444,
+      887,
+      887
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-6",
+    "path": "/assets/v2/fx-6.png",
+    "width": 356,
+    "height": 421,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      887,
+      444,
+      1330,
+      887
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "fx-7",
+    "path": "/assets/v2/fx-7.png",
+    "width": 403,
+    "height": 399,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/effects.png",
+    "region": [
+      1330,
+      444,
+      1774,
+      887
+    ],
+    "model": "gpt-image-2.5-sunburst"
+  },
+  {
+    "id": "beast",
+    "path": "/assets/v2/beast.png",
+    "width": 518,
+    "height": 616,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "source": "output/imagegen/beast.png",
+    "region": null,
+    "model": "gpt-image-2.5-sunburst"
+  }
+]

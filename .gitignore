@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.env
+.env.*
+*.local
+work/
+
+data/
+output/
+
+# Local delivery and private QA artifacts
+dist-web/
+release/
+docs/evidence/
+docs/ACCEPTANCE*.md
+/assets/
+scripts/package_release.py
+*.sqlite*
+*.db
+*.log

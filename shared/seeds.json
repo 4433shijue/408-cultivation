@@ -1,0 +1,386 @@
+[
+  {
+    "id": "ds-01",
+    "subject": "数据结构",
+    "topic_id": "sequence_insert",
+    "stem": "在长度为 n 的顺序表末尾插入一个元素，且存储空间足够时，时间复杂度是多少？",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n²)"
+    ],
+    "answer": 0,
+    "explanation": "末尾插入无需移动原有元素，只需写入新元素并更新长度，因此为 O(1)。",
+    "knowledge_point": "sequence_insert",
+    "version": 1
+  },
+  {
+    "id": "ds-02",
+    "subject": "数据结构",
+    "topic_id": "stack",
+    "stem": "对空栈依次执行入栈 A、入栈 B、出栈，弹出的元素是什么？",
+    "options": [
+      "A",
+      "B",
+      "A 和 B",
+      "栈为空"
+    ],
+    "answer": 1,
+    "explanation": "栈遵循后进先出，B 最后入栈，所以先弹出。",
+    "knowledge_point": "stack",
+    "version": 1
+  },
+  {
+    "id": "ds-03",
+    "subject": "数据结构",
+    "topic_id": "queue",
+    "stem": "空队列依次入队 A、B、C，再出队一次，取出哪个元素？",
+    "options": [
+      "C",
+      "B",
+      "A",
+      "无法确定"
+    ],
+    "answer": 2,
+    "explanation": "普通队列先进先出，A 最先入队，也最先出队。",
+    "knowledge_point": "queue",
+    "version": 1
+  },
+  {
+    "id": "ds-04",
+    "subject": "数据结构",
+    "topic_id": "binary_search",
+    "stem": "对已按关键字升序排列的顺序表进行折半查找，最坏时间复杂度为？",
+    "options": [
+      "O(n²)",
+      "O(n)",
+      "O(1)",
+      "O(log n)"
+    ],
+    "answer": 3,
+    "explanation": "每次比较把待查区间缩小约一半，因此最坏比较次数为对数级。",
+    "knowledge_point": "binary_search",
+    "version": 1
+  },
+  {
+    "id": "ds-05",
+    "subject": "数据结构",
+    "topic_id": "tree_edges",
+    "stem": "一棵有 n 个结点的非空树，其边数为多少？",
+    "options": [
+      "n",
+      "n-1",
+      "n+1",
+      "2n"
+    ],
+    "answer": 1,
+    "explanation": "除根以外，每个结点与父结点对应一条边，共 n-1 条。",
+    "knowledge_point": "tree_edges",
+    "version": 1
+  },
+  {
+    "id": "ds-06",
+    "subject": "数据结构",
+    "topic_id": "bfs",
+    "stem": "广度优先遍历图时，通常用什么结构保存待访问的顶点？",
+    "options": [
+      "栈",
+      "队列",
+      "仅一个变量",
+      "大根堆"
+    ],
+    "answer": 1,
+    "explanation": "队列保证较早发现的顶点较早被处理，从而逐层遍历。",
+    "knowledge_point": "bfs",
+    "version": 1
+  },
+  {
+    "id": "os-01",
+    "subject": "操作系统",
+    "topic_id": "process",
+    "stem": "下列哪一项正确描述进程与程序的区别？",
+    "options": [
+      "程序动态而进程静态",
+      "进程是程序的一次执行过程",
+      "进程只存在于磁盘",
+      "程序一定有独立地址空间"
+    ],
+    "answer": 1,
+    "explanation": "程序是静态指令集合，进程是程序在系统中的执行过程，具有动态性。",
+    "knowledge_point": "process",
+    "version": 1
+  },
+  {
+    "id": "os-02",
+    "subject": "操作系统",
+    "topic_id": "blocking",
+    "stem": "以下哪种情况属于进程从运行态转为阻塞态？",
+    "options": [
+      "时间片用完",
+      "等待磁盘 I/O 完成",
+      "被调度程序选中",
+      "刚创建进程"
+    ],
+    "answer": 1,
+    "explanation": "等待 I/O 时无法继续运行而阻塞；时间片用完一般进入就绪态。",
+    "knowledge_point": "blocking",
+    "version": 1
+  },
+  {
+    "id": "os-03",
+    "subject": "操作系统",
+    "topic_id": "deadlock",
+    "stem": "下列哪项不是死锁的四个必要条件之一？",
+    "options": [
+      "互斥",
+      "循环等待",
+      "请求并保持",
+      "资源可被任意剥夺"
+    ],
+    "answer": 3,
+    "explanation": "四个必要条件为互斥、请求并保持、不可剥夺、循环等待。任意剥夺与不可剥夺相反。",
+    "knowledge_point": "deadlock",
+    "version": 1
+  },
+  {
+    "id": "os-04",
+    "subject": "操作系统",
+    "topic_id": "paging",
+    "stem": "按字节编址的分页系统中，页面大小为 4 KiB，页内偏移需要多少位？",
+    "options": [
+      "10",
+      "11",
+      "12",
+      "16"
+    ],
+    "answer": 2,
+    "explanation": "4 KiB = 4096 字节 = 2 的 12 次方字节，按字节编址的页内偏移为 12 位。",
+    "knowledge_point": "paging",
+    "version": 2
+  },
+  {
+    "id": "os-05",
+    "subject": "操作系统",
+    "topic_id": "round_robin",
+    "stem": "时间片轮转调度中，运行进程的时间片用完且未结束或阻塞，通常转入？",
+    "options": [
+      "终止态",
+      "阻塞态",
+      "创建态",
+      "就绪态"
+    ],
+    "answer": 3,
+    "explanation": "进程仍可运行，只是让出 CPU，返回就绪队列等待再次调度。",
+    "knowledge_point": "round_robin",
+    "version": 1
+  },
+  {
+    "id": "os-06",
+    "subject": "操作系统",
+    "topic_id": "semaphore",
+    "stem": "用信号量实现单个临界区的互斥访问时，互斥信号量通常初值为？",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "进程总数"
+    ],
+    "answer": 1,
+    "explanation": "初值 1 表示一个可用许可，第一个进程进入后其余进程需要等待。",
+    "knowledge_point": "semaphore",
+    "version": 1
+  },
+  {
+    "id": "cn-01",
+    "subject": "计算机网络",
+    "topic_id": "ip",
+    "stem": "IP 协议主要提供哪种服务？",
+    "options": [
+      "可靠面向连接服务",
+      "不可靠无连接数据报服务",
+      "应用层加密服务",
+      "端到端进程标识"
+    ],
+    "answer": 1,
+    "explanation": "IP 提供无连接、尽力而为的数据报服务，不保证可靠交付。",
+    "knowledge_point": "ip",
+    "version": 1
+  },
+  {
+    "id": "cn-02",
+    "subject": "计算机网络",
+    "topic_id": "ethernet",
+    "stem": "以太网交换机转发帧时主要依据哪个地址？",
+    "options": [
+      "IP 地址",
+      "端口号",
+      "MAC 地址",
+      "域名"
+    ],
+    "answer": 2,
+    "explanation": "二层以太网交换机查找目的 MAC 地址对应的端口。",
+    "knowledge_point": "ethernet",
+    "version": 1
+  },
+  {
+    "id": "cn-03",
+    "subject": "计算机网络",
+    "topic_id": "tcp",
+    "stem": "TCP 建立连接通常需要几次握手？",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "answer": 2,
+    "explanation": "典型过程为 SYN、SYN+ACK、ACK，共三次握手。",
+    "knowledge_point": "tcp",
+    "version": 1
+  },
+  {
+    "id": "cn-04",
+    "subject": "计算机网络",
+    "topic_id": "ipv4",
+    "stem": "IPv4 地址的长度是多少位？",
+    "options": [
+      "16",
+      "32",
+      "64",
+      "128"
+    ],
+    "answer": 1,
+    "explanation": "IPv4 地址为 32 位；128 位是 IPv6 的地址长度。",
+    "knowledge_point": "ipv4",
+    "version": 1
+  },
+  {
+    "id": "cn-05",
+    "subject": "计算机网络",
+    "topic_id": "dns",
+    "stem": "DNS 的主要用途是什么？",
+    "options": [
+      "把域名解析为相应记录，如 IP 地址",
+      "给所有数据包加密",
+      "保证所有帧可靠送达",
+      "为 CPU 分配时间片"
+    ],
+    "answer": 0,
+    "explanation": "DNS 保存并查询域名对应的资源记录，地址记录可用于域名到 IP 地址的解析。",
+    "knowledge_point": "dns",
+    "version": 1
+  },
+  {
+    "id": "cn-06",
+    "subject": "计算机网络",
+    "topic_id": "udp",
+    "stem": "UDP 的基本首部长度是多少字节？",
+    "options": [
+      "4",
+      "8",
+      "20",
+      "40"
+    ],
+    "answer": 1,
+    "explanation": "UDP 首部有源端口、目的端口、长度、校验和四个 16 位字段，共 8 字节。",
+    "knowledge_point": "udp",
+    "version": 1
+  },
+  {
+    "id": "co-01",
+    "subject": "计算机组成原理",
+    "topic_id": "alu",
+    "stem": "执行算术运算和逻辑运算的主要部件是什么？",
+    "options": [
+      "控制器",
+      "运算器",
+      "主存储器",
+      "输入设备"
+    ],
+    "answer": 1,
+    "explanation": "运算器执行算术和逻辑运算，控制器协调指令执行。",
+    "knowledge_point": "alu",
+    "version": 1
+  },
+  {
+    "id": "co-02",
+    "subject": "计算机组成原理",
+    "topic_id": "address",
+    "stem": "按字节编址的存储器有 10 根地址线，最多可寻址多少字节？",
+    "options": [
+      "10",
+      "100",
+      "512",
+      "1024"
+    ],
+    "answer": 3,
+    "explanation": "10 位地址可表示 2 的 10 次方即 1024 个字节地址。",
+    "knowledge_point": "address",
+    "version": 1
+  },
+  {
+    "id": "co-03",
+    "subject": "计算机组成原理",
+    "topic_id": "unsigned",
+    "stem": "8 位无符号二进制整数可表示的最大值是？",
+    "options": [
+      "127",
+      "128",
+      "255",
+      "256"
+    ],
+    "answer": 2,
+    "explanation": "8 位全部为 1 时数值为 2 的 8 次方减 1，即 255。",
+    "knowledge_point": "unsigned",
+    "version": 1
+  },
+  {
+    "id": "co-04",
+    "subject": "计算机组成原理",
+    "topic_id": "complement",
+    "stem": "8 位补码能表示的整数范围为？",
+    "options": [
+      "-127 到 127",
+      "-128 到 127",
+      "0 到 255",
+      "-128 到 128"
+    ],
+    "answer": 1,
+    "explanation": "n 位补码范围是 -2^(n-1) 到 2^(n-1)-1，代入 n=8 即得。",
+    "knowledge_point": "complement",
+    "version": 1
+  },
+  {
+    "id": "co-05",
+    "subject": "计算机组成原理",
+    "topic_id": "cache",
+    "stem": "高速缓存 Cache 的使用主要利用程序访问的什么特性？",
+    "options": [
+      "局部性",
+      "绝对随机性",
+      "仅顺序性",
+      "无重复性"
+    ],
+    "answer": 0,
+    "explanation": "时间局部性与空间局部性使近期或邻近的数据更可能再次被访问。",
+    "knowledge_point": "cache",
+    "version": 1
+  },
+  {
+    "id": "co-06",
+    "subject": "计算机组成原理",
+    "topic_id": "pc",
+    "stem": "程序计数器 PC 通常用于保存什么？",
+    "options": [
+      "下一条待执行指令的地址",
+      "所有中间运算结果",
+      "整个操作系统",
+      "外设中断次数"
+    ],
+    "answer": 0,
+    "explanation": "PC 通常保存下一条待执行指令的地址，顺序执行时递增，转移时更新。",
+    "knowledge_point": "pc",
+    "version": 1
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "name": "408xiuxian",
+  "version": "0.4.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "server": "node server/index.mjs",
+    "start": "node server/index.mjs",
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1",
+    "test:browser": "node tests/playtest.mjs",
+    "format": "prettier --write src server tests vite.config.ts",
+    "build:web": "node scripts/build-web.mjs",
+    "test:web": "node tests/web-browser.mjs",
+    "test:rules": "node scripts/check-core.mjs"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
