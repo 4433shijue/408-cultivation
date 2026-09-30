@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const m = require("../work/rules/model.js"),
   b = require("../work/rules/battle.js"),
   c = require("../work/rules/content.js");
+const rt = require("../work/rules/realtime.js");
 const seeds = require("../shared/seeds.json");
 test("new game has harvest and free-start resources", () => {
   const s = m.newSave("female", "阿禾");
@@ -11,16 +12,20 @@ test("new game has harvest and free-start resources", () => {
   assert.equal(s.inventory.herb, 4);
   assert.ok(s.tutorial.harvested);
 });
-test("watering advances only at next day; mature crops persist", () => {
-  const s = m.newSave("male", "阿禾");
+test("real time growth advances offline; watering is once only", () => {
+  const s = m.newSave("male", "禾");
   m.onPlot(s, 3);
-  m.nextDay(s);
-  assert.equal(s.plots[3].stage, 0);
+  const start = s.plots[3].readyAt;
   m.onPlot(s, 3);
-  m.nextDay(s);
-  assert.equal(s.plots[3].stage, 1);
-  assert.equal(s.plots[0].stage, 2);
+  assert.equal(s.plots[3].readyAt, start - 360000);
+  m.onPlot(s, 3);
+  assert.equal(s.plots[3].readyAt, start - 360000);
+  rt.syncTime(s, start + 86400000);
+  assert.equal(s.plots[3].stage, 2);
+  m.onPlot(s, 3);
+  assert.equal(s.inventory.herb, 4);
 });
+
 test("recipes require exact inputs and locked ingredients are preserved", () => {
   const s = m.newSave("female", "禾");
   s.board[0] = "herb";
@@ -38,7 +43,7 @@ test("orders pay once per actual inventory and cycle", () => {
   const s = m.newSave("female", "禾");
   s.inventory.tea = 1;
   m.deliver(s);
-  assert.equal(s.coins, 34);
+  assert.equal(s.coins, 40);
   assert.equal(s.orderIndex, 1);
   assert.throws(() => m.deliver(s));
 });
@@ -58,11 +63,9 @@ test("all six crops and all eight recipes usable", () => {
     const s = m.newSave("female", "禾");
     s.tutorial.crafted = true;
     s.selectedCrop = crop;
+    s.seedStock[crop] = 1;
     m.onPlot(s, 3);
-    for (let i = 0; i < c.CROPS[crop].days; i++) {
-      m.onPlot(s, 3);
-      m.nextDay(s);
-    }
+    rt.syncTime(s, s.plots[3].readyAt);
     m.onPlot(s, 3);
     assert.ok(s.inventory[crop] >= 2);
   }
@@ -112,8 +115,9 @@ test("all NPC events trigger once, gifting respects locks", () => {
     m.chat(s, p.id);
     m.chat(s, p.id, true);
     assert.ok(s.events.includes(p.id));
+    const rt = require("../work/rules/realtime.js");
     const seeds = s.seeds;
-    m.nextDay(s);
+    rt.syncTime(s, s.lastSeen + 86400000);
     m.chat(s, p.id);
     assert.equal(s.seeds, seeds);
   }
@@ -136,7 +140,7 @@ test("old save migration preserves facts without inventing answers", () => {
   assert.equal(migrated.name, "旧禾");
   assert.equal(migrated.answers[0].correct, null);
   assert.equal(migrated.qi, 10);
-  assert.equal(m.validateSave(migrated).version, 3);
+  assert.equal(m.validateSave(migrated).version, 4);
 });
 test("corrupt and malicious save payloads rejected", () => {
   assert.throws(() => m.migrate({ version: 99 }));

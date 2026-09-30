@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const m = require("../work/rules/model.js");
 const p = require("../work/rules/progression.js");
 const c = require("../work/rules/content.js");
+const rt = require("../work/rules/realtime.js");
 function make(s, id) {
   const r = c.RECIPES.find((r) => r.id === id);
   assert.ok(p.canPay(s, r.inputs));
@@ -34,13 +35,14 @@ test("first chapter completes on day 10 using only earned crops, orders and free
     "rice",
   ];
   for (let i = 0; i < 9; i++) {
-    if (!s.seeds) s.seeds = 3;
+    s.seeds++;
+    rt.buySeeds(s, crops[i], 1, true);
     s.selectedCrop = crops[i];
     m.onPlot(s, i);
     m.onPlot(s, i);
   }
   for (let day = 2; day <= 10; day++) {
-    m.nextDay(s);
+    rt.syncTime(s, s.lastSeen + 86400000);
     for (const person of c.PEOPLE) m.chat(s, person.id);
     for (let i = 0; i < 9; i++) {
       const plot = s.plots[i];
@@ -67,8 +69,7 @@ test("first chapter completes on day 10 using only earned crops, orders and free
       p.claimChapter(s);
       make(s, "tonic");
     }
-    if (day < 10 && s.home.chapter === 4)
-      assert.throws(() => p.claimChapter(s));
+
     m.validateSave(s);
   }
   p.claimChapter(s);
@@ -85,19 +86,17 @@ test("first chapter completes on day 10 using only earned crops, orders and free
   assert.throws(() => p.claimChapter(s));
   assert.equal(s.coins, coins);
 });
-test("rain waters existing and newly planted crops, but does not retroactively grow a dry plot", () => {
+test("weather does not gate planting; spring waters only once", () => {
   const s = m.newSave("male", "禾");
-  s.day = 2;
   m.onPlot(s, 3);
-  m.nextDay(s);
-  assert.equal(p.weather(s), "雨");
-  assert.equal(s.plots[3].stage, 0);
-  assert.ok(s.plots[3].watered);
-  m.onPlot(s, 4);
-  assert.ok(s.plots[4].watered);
-  m.nextDay(s);
-  assert.equal(s.plots[4].stage, 1);
+  assert.equal(s.plots[3].watered, false);
+  s.home.facilities.spring = true;
+  p.waterAll(s);
+  const ready = s.plots[3].readyAt;
+  p.waterAll(s);
+  assert.equal(s.plots[3].readyAt, ready);
 });
+
 test("locked upgrade and locked chapter cost are atomic; duplicate upgrades do not charge", () => {
   const s = m.newSave("female", "禾");
   s.inventory.rice = 2;
@@ -131,7 +130,7 @@ test("drying capacity and unlocked facility enforced without consuming board; co
   const inv = JSON.stringify(s.inventory);
   assert.throws(() => p.batchCraft(s, "dried"));
   assert.equal(JSON.stringify(s.inventory), inv);
-  for (let i = 0; i < 20; i++) m.nextDay(s);
+  for (let i = 0; i < 20; i++) rt.syncTime(s, s.lastSeen + 86400000);
   assert.equal(p.collectDrying(s), 1);
   assert.throws(() => p.collectDrying(s));
   p.batchCraft(s, "dried");
@@ -142,7 +141,7 @@ test("three friendship chapters each, repeat visits guarded and persisted", () =
   s.home.chapter = 3;
   for (let day = 1; day <= 13; day++) {
     for (const person of c.PEOPLE) m.chat(s, person.id);
-    if (day < 13) m.nextDay(s);
+    if (day < 13) rt.syncTime(s, s.lastSeen + 86400000);
   }
   for (const person of c.PEOPLE)
     for (const suffix of ["", "-2", "-3"])
@@ -175,7 +174,7 @@ test("v0.2 homestead migration preserves facts and malformed expansion data is r
   ])
     delete old.inventory[id];
   const migrated = m.migrate(old);
-  assert.equal(migrated.home.startedOn, 80);
+  assert.equal(migrated.home.startedOn, rt.dayKey());
   assert.equal(migrated.inventory.herb, 17);
   assert.equal(migrated.home.harvested.length, 0);
   migrated.home.drying = [{ readyOn: 81, count: -1 }];

@@ -1,6 +1,13 @@
 import {
+  syncTime,
+  dayKey,
+  upgradeTime,
+  waterPlot,
+  readyPlot,
+  plantPlot,
+} from "./realtime";
+import {
   freshHomestead,
-  weather,
   remember,
   checkRecipe,
   finishRecipe,
@@ -11,8 +18,24 @@ import type { Homestead } from "./progression";
 import { CROPS, ITEMS, LEVELS, ORDERS, PEOPLE, RECIPES } from "./content";
 import type { Crop, Gender, Item } from "./content";
 export type { Gender, Item, Tab } from "./content";
-export type Plot = { crop: Crop | null; stage: number; watered: boolean };
+export type Plot = {
+  crop: Crop | null;
+  stage: number;
+  watered: boolean;
+  plantedAt?: number;
+  readyAt?: number;
+  fertilized?: boolean;
+};
 export type BattleState = {
+  id: string;
+  specials: Record<number, "row" | "color">;
+  blocks: Record<number, number>;
+  blockKinds: Record<number, "vine" | "stone" | "seal" | "ice">;
+  collected: number;
+  turns: number;
+  warning: boolean;
+  toolUsed: boolean;
+  notice: string;
   cells: number[];
   hp: number;
   moves: number;
@@ -36,11 +59,18 @@ export type Answer = {
   id: string;
   selected: number | null;
   correct: boolean | null;
+  legacyDay?: number;
   day: number;
   question?: Question;
 };
 export type SaveData = {
-  version: 3;
+  version: 4;
+  lastSeen: number;
+  seedStock: Record<Crop, number>;
+  sand: number;
+  cleared: number[];
+  settled: string[];
+  tools: Record<string, number>;
   companion: {
     profileId: string;
     romances: string[];
@@ -82,19 +112,25 @@ export type SaveData = {
   orderIndex: number;
   reducedMotion: boolean;
 };
-export const SAVE_KEY = "lingtian-408-save-v3";
+export const SAVE_KEY = "lingtian-408-save-v4";
 const OLD_KEY = "lingtian-408-save-v1";
 export function newSave(gender: Gender, name: string): SaveData {
   return {
-    version: 3,
+    version: 4,
+    lastSeen: Date.now(),
+    seedStock: { herb: 6, lotus: 0, rice: 0, mint: 0, berry: 0, chrys: 0 },
+    sand: 0,
+    cleared: [],
+    settled: [],
+    tools: { shuffle: 0, break: 0, steps: 0 },
     companion: { profileId: crypto.randomUUID(), romances: [], rewards: {} },
     home: freshHomestead(),
     name,
     gender,
-    day: 1,
+    day: dayKey(),
     qi: 0,
     coins: 20,
-    seeds: 6,
+    seeds: 0,
     inventory: {
       mint: 0,
       berry: 0,
@@ -116,6 +152,9 @@ export function newSave(gender: Gender, name: string): SaveData {
       crop: i < 3 ? "herb" : null,
       stage: i < 3 ? 2 : 0,
       watered: i < 3,
+      plantedAt: 0,
+      readyAt: 0,
+      fertilized: false,
     })),
     board: Array(9).fill(null),
     selectedItem: "herb",
@@ -166,6 +205,28 @@ export function validateSave(value: unknown): SaveData {
     )
   )
     throw Error("道友关系记录无效");
+  if (
+    !integer(s.lastSeen) ||
+    !integer(s.sand) ||
+    !s.seedStock ||
+    !Object.keys(CROPS).every((k) => integer(s.seedStock[k as Crop])) ||
+    !Array.isArray(s.cleared) ||
+    !s.cleared.every((n) => integer(n) && n < 60) ||
+    !Array.isArray(s.settled) ||
+    !s.settled.every((n) => typeof n === "string") ||
+    !s.tools ||
+    !["shuffle", "break", "steps"].every((k) => integer(s.tools[k]))
+  )
+    throw Error("实时进度无效");
+  if (
+    !s.plots?.every(
+      (p) =>
+        integer(p.readyAt) &&
+        integer(p.plantedAt) &&
+        typeof p.fertilized === "boolean",
+    )
+  )
+    throw Error("田地计时无效");
   const h = s.home;
   if (
     !h ||
@@ -199,7 +260,7 @@ export function validateSave(value: unknown): SaveData {
   )
     throw Error("家园记录无效");
   if (
-    s.version !== 3 ||
+    s.version !== 4 ||
     !["female", "male"].includes(s.gender) ||
     typeof s.name !== "string" ||
     s.name.trim().length < 1 ||
@@ -295,7 +356,7 @@ export function validateSave(value: unknown): SaveData {
       !integer(s.battle.hp) ||
       !integer(s.battle.moves) ||
       !integer(s.battle.level) ||
-      s.battle.level > 2 ||
+      s.battle.level > 59 ||
       !["playing", "won", "lost"].includes(s.battle.status) ||
       typeof s.battle.rewarded !== "boolean" ||
       !(
@@ -304,12 +365,45 @@ export function validateSave(value: unknown): SaveData {
       ))
   )
     throw Error("战斗记录无效");
+  if (s.battle) {
+    const b = s.battle;
+    if (
+      typeof b.id !== "string" ||
+      !b.id ||
+      !integer(b.turns) ||
+      !integer(b.collected) ||
+      typeof b.warning !== "boolean" ||
+      typeof b.toolUsed !== "boolean" ||
+      typeof b.notice !== "string" ||
+      !b.specials ||
+      !b.blocks ||
+      !b.blockKinds ||
+      !Object.entries(b.blockKinds).every(
+        ([k, v]) =>
+          integer(+k) &&
+          +k < 36 &&
+          ["vine", "stone", "seal", "ice"].includes(v),
+      ) ||
+      !Object.entries(b.specials).every(
+        ([k, v]) => integer(+k) && +k < 36 && ["row", "color"].includes(v),
+      ) ||
+      !Object.entries(b.blocks).every(
+        ([k, v]) => integer(+k) && +k < 36 && integer(v) && v > 0 && v <= 2,
+      )
+    )
+      throw Error("关卡数据无效");
+  }
   return s;
 }
 export function migrate(value: unknown): SaveData {
-  const old = value as Record<string, any>;
+  const old = structuredClone(value) as Record<string, any>;
   if (!old || typeof old !== "object") throw Error("存档格式无效");
-  if (old.version === 3) return validateSave(value);
+  if (old.version === 4) {
+    const s = validateSave(old);
+    syncTime(s);
+    return s;
+  }
+  if (old.version === 3) return validateSave(upgradeTime(structuredClone(old)));
   if (old.version === 2) {
     const next = {
       ...old,
@@ -330,7 +424,7 @@ export function migrate(value: unknown): SaveData {
       ] as Item[])
         if (next.inventory[id] === undefined) next.inventory[id] = 0;
     }
-    return validateSave(next);
+    return validateSave(upgradeTime(next));
   }
   if (old.version !== 1) throw Error("不支持此存档版本");
   const s = newSave(old.gender, old.name);
@@ -360,7 +454,7 @@ export function migrate(value: unknown): SaveData {
   s.battle = old.battle
     ? { ...old.battle, level: 0, rewarded: old.battle.status === "won" }
     : null;
-  return validateSave(s);
+  return validateSave(upgradeTime(s));
 }
 export function loadSave(): { save: SaveData | null; error: string | null } {
   try {
@@ -369,11 +463,15 @@ export function loadSave(): { save: SaveData | null; error: string | null } {
       const value = JSON.parse(raw);
       if (value.home === undefined)
         localStorage.setItem(`${SAVE_KEY}-before-homestead`, raw);
-      const save = validateSave(value);
+      const save = migrate(value);
       persist(save);
       return { save, error: null };
     }
-    for (const key of ["lingtian-408-save-v2", OLD_KEY]) {
+    for (const key of [
+      "lingtian-408-save-v3",
+      "lingtian-408-save-v2",
+      OLD_KEY,
+    ]) {
       const old = localStorage.getItem(key);
       if (!old) continue;
       localStorage.setItem(`${key}-backup`, old);
@@ -394,43 +492,29 @@ export function persist(s: SaveData) {
   validateSave(s);
   localStorage.setItem(SAVE_KEY, JSON.stringify(s));
 }
-export function nextDay(s: SaveData) {
-  s.day++;
-  for (const p of s.plots) {
-    if (p.crop && p.watered)
-      p.stage = Math.min(CROPS[p.crop].days, p.stage + 1);
-    p.watered = !!p.crop && weather(s) === "雨";
-  }
-  s.battle = null;
-}
 export function onPlot(s: SaveData, index: number): string {
+  syncTime(s);
   const p = s.plots[index];
   if (!p) return "";
-  if (!p.crop) {
-    if (s.seeds < 1) return "种子不足，可以领取基础种子。";
-    if (s.selectedCrop !== "herb" && !s.tutorial.crafted)
-      return "先完成一份灵茶，解锁更多种子。";
-    s.seeds--;
-    p.crop = s.selectedCrop;
-    p.stage = 0;
-    p.watered = weather(s) === "雨";
-    return `已种下${CROPS[p.crop].name}`;
-  }
-  if (p.stage >= CROPS[p.crop].days) {
+  if (!p.crop) return plantPlot(s, index);
+  if (readyPlot(s, p)) {
     const n = s.breakthrough ? 3 : 2;
     s.inventory[p.crop] += n;
     remember(s.home.harvested, p.crop);
     s.tutorial.harvested = true;
-    p.crop = null;
-    p.stage = 0;
-    p.watered = false;
+    Object.assign(p, {
+      crop: null,
+      stage: 0,
+      watered: false,
+      plantedAt: 0,
+      readyAt: 0,
+      fertilized: false,
+    });
     return `收获 ${n} 份作物`;
   }
-  if (!p.watered) {
-    p.watered = true;
-    return "清水入土，明日再来看看。";
-  }
-  return "今日已浇水";
+  return waterPlot(s, p)
+    ? "清水入土，生长时间缩短10%。"
+    : "这轮已经浇水，草木正慢慢长大。";
 }
 export function craftPreview(s: SaveData) {
   const counts: Partial<Record<Item, number>> = {};
@@ -458,8 +542,7 @@ export function deliver(s: SaveData) {
   if (s.locked.includes(o.item) || s.inventory[o.item] < o.count)
     throw Error("材料不足或物品已锁定");
   s.inventory[o.item] -= o.count;
-  s.coins += o.coins;
-  s.seeds += o.seeds;
+  s.coins += o.coins + o.seeds * 2;
   s.orders++;
   s.orderIndex = (s.orderIndex + 1) % ORDERS.length;
 }
@@ -471,6 +554,8 @@ export function answer(
 ) {
   if (!Number.isInteger(selected) || selected < 0 || selected > 3)
     throw Error("请先选择答案");
+  syncTime(s);
+  const eligible = s.answers.filter((a) => a.day === s.day).length < 5;
   const correct = selected === q.answer;
   if (!review && !s.answered.includes(q.id)) {
     s.answered.push(q.id);
@@ -478,7 +563,7 @@ export function answer(
     s.pending = s.pending.filter((id) => id !== q.id);
     s.cultivatedOn = s.day;
     s.tutorial.answered = true;
-    if (correct) s.qi += 10;
+    if (correct && eligible) s.qi += 10;
   }
   return correct;
 }
@@ -495,6 +580,7 @@ export function breakthrough(s: SaveData) {
   return false;
 }
 export function chat(s: SaveData, id: string, gift = false) {
+  syncTime(s);
   const p = PEOPLE.find((p) => p.id === id);
   if (!p) throw Error("未找到道友");
   const days = gift ? s.giftedOn : s.chattedOn;
@@ -519,12 +605,15 @@ export function chat(s: SaveData, id: string, gift = false) {
 }
 export function rewardBattle(s: SaveData) {
   const b = s.battle;
-  if (b?.status === "won" && !b.rewarded) {
-    b.rewarded = true;
-    s.inventory.ore += LEVELS[b.level].reward;
-    s.coins += 6 * (b.level + 1);
-    s.tutorial.fought = true;
-    return true;
-  }
-  return false;
+  if (!b || b.status !== "won" || b.rewarded || s.settled.includes(b.id))
+    return false;
+  b.rewarded = true;
+  s.settled.push(b.id);
+  const l = LEVELS[b.level],
+    first = !s.cleared.includes(b.level);
+  s.sand += first ? l.sand : l.repeat;
+  s.inventory.ore += l.reward;
+  if (first) s.cleared.push(b.level);
+  s.tutorial.fought = true;
+  return true;
 }

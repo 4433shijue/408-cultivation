@@ -279,7 +279,7 @@ export async function questionApi(path: string, body: any): Promise<any> {
   }
   if (path === "config") {
     if (current) throw Error("请先取消当前批次");
-    config = parseConfig(body);
+    config = parseConfig({ ...body, auto: body.auto !== false });
     return status();
   }
   if (path === "test") {
@@ -299,7 +299,10 @@ export async function questionApi(path: string, body: any): Promise<any> {
       !current &&
       used < 3 &&
       d.questions.filter(
-        (q) => q.status === "approved" && !body.answered?.includes(q.id),
+        (q) =>
+          q.status === "approved" &&
+          !body.answered?.includes(q.id) &&
+          !body.reported?.includes(q.id),
       ).length < 10
     )
       return start();

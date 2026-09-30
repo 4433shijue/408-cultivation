@@ -1,3 +1,4 @@
+import { remaining } from "./realtime";
 import Phaser from "phaser";
 import { CROPS } from "./content";
 import type { SaveData, Tab } from "./model";
@@ -6,6 +7,7 @@ export class Playfield extends Phaser.Scene {
   private plots: Phaser.GameObjects.Container[] = [];
   private labels: Phaser.GameObjects.Text[] = [];
   private tiles: Phaser.GameObjects.Image[] = [];
+  private markers: Phaser.GameObjects.Text[] = [];
   private board?: Phaser.GameObjects.Image;
   private current: SaveData | null = null;
   private action: (i: number) => void = () => {};
@@ -59,6 +61,16 @@ export class Playfield extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => this.action(i));
       this.tiles.push(t);
+      this.markers.push(
+        this.add
+          .text(t.x + 20, t.y - 26, "", {
+            fontSize: "15px",
+            color: "#fff9d8",
+            backgroundColor: "#294637",
+            padding: { x: 3, y: 2 },
+          })
+          .setDepth(15),
+      );
     }
     this.game.events.emit("world-ready");
   }
@@ -90,13 +102,35 @@ export class Playfield extends Phaser.Scene {
           : p.stage >= CROPS[p.crop].days
             ? "可收获"
             : p.watered
-              ? "已浇水"
-              : "浇水",
+              ? remaining((p.readyAt ?? 0) - s.lastSeen)
+              : remaining((p.readyAt ?? 0) - s.lastSeen) + " · 可浇水",
       );
     });
     this.tiles.forEach((t, i) => {
       t.setVisible(tab === "battle" && !!s.battle);
+      const marker = this.markers[i];
+      marker.setVisible(
+        tab === "battle" &&
+          !!s.battle &&
+          !!(s.battle.blocks[i] || s.battle.specials[i]),
+      );
       if (s.battle) {
+        marker.setText(
+          s.battle.blocks[i]
+            ? `${{ vine: "藤", stone: "石", ice: "冰", seal: "封" }[s.battle.blockKinds[i]]}${s.battle.blocks[i]}`
+            : s.battle.specials[i] === "row"
+              ? "横扫"
+              : s.battle.specials[i] === "color"
+                ? "同色"
+                : "",
+        );
+        t.setTint(
+          s.battle.blocks[i]
+            ? 0x829e9c
+            : s.battle.specials[i]
+              ? 0xffd971
+              : 0xffffff,
+        );
         t.setTexture("icon" + (21 + s.battle.cells[i])).setDisplaySize(66, 66);
         t.setAlpha(s.battle.selected === i ? 0.65 : 1);
       }

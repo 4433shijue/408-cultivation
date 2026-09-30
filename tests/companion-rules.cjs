@@ -73,7 +73,7 @@ test("v2 migration retains game, home, answers and orientations by stable person
   old.affinity = { lin: 20, yu: 15, shen: 8 };
   const before = JSON.stringify(old);
   const next = m.migrate(old);
-  assert.equal(next.version, 3);
+  assert.equal(next.version, 4);
   assert.deepEqual(next.affinity, old.affinity);
   assert.equal(next.companion.romances.length, 0);
   assert.equal(JSON.stringify(old), before);

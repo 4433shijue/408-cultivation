@@ -1,3 +1,4 @@
+import { syncTime, waterPlot } from "./realtime";
 import { ITEMS, PEOPLE, RECIPES } from "./content";
 import type { Item } from "./content";
 import type { SaveData } from "./model";
@@ -49,7 +50,7 @@ export const FACILITIES: Record<
   },
   rack: {
     name: "晾晒架",
-    description: "可挂三份静心干草，过一夜后收取；雨天移到檐下，不会损失。",
+    description: "可挂三份静心干草，1小时后收取；雨天移到檐下，不会损失。",
     cost: { rice: 2, herb: 2 },
     coins: 8,
     art: 4,
@@ -72,7 +73,7 @@ export function canPay(
 }
 function pay(s: SaveData, cost: Partial<Record<Item, number>>, coins = 0) {
   if (!canPay(s, cost, coins))
-    throw Error("材料或灵石不足，请检查锁定的物品。");
+    throw Error("材料或金币不足，请检查锁定的物品。");
   s.coins -= coins;
   for (const [id, n] of Object.entries(cost)) s.inventory[id as Item] -= n!;
 }
@@ -86,15 +87,16 @@ export function upgrade(s: SaveData, id: Facility) {
 export function waterAll(s: SaveData) {
   if (!s.home.facilities.spring) throw Error("先修好旧灵泉，才能引水入田。");
   s.plots.forEach((p) => {
-    if (p.crop) p.watered = true;
+    waterPlot(s, p);
   });
 }
 export function collectDrying(s: SaveData) {
+  syncTime(s);
   const n = s.home.drying
-    .filter((d) => d.readyOn <= s.day)
+    .filter((d) => d.readyOn <= s.lastSeen)
     .reduce((a, d) => a + d.count, 0);
-  if (!n) throw Error("干草还未晾好，明日再来。");
-  s.home.drying = s.home.drying.filter((d) => d.readyOn > s.day);
+  if (!n) throw Error("干草还未晾好，稍后再来。");
+  s.home.drying = s.home.drying.filter((d) => d.readyOn > s.lastSeen);
   s.inventory.dried += n;
   remember(s.home.crafted, "dried");
   return n;
@@ -115,7 +117,11 @@ export function checkRecipe(s: SaveData, id: string, count = 1) {
   return r;
 }
 export function finishRecipe(s: SaveData, output: Item, count = 1) {
-  if (output === "dried") s.home.drying.push({ readyOn: s.day + 1, count });
+  if (output === "dried")
+    s.home.drying.push({
+      readyOn: Math.max(s.lastSeen, Date.now()) + 3600000,
+      count,
+    });
   else {
     s.inventory[output] += count;
     remember(s.home.crafted, output);
@@ -172,10 +178,8 @@ export const CHAPTER = [
   {
     title: "五 · 来日有约",
     text: "泉边终于有了笑声。再听听三位朋友的故事，给这座小院留出慢慢熟悉彼此的日子。",
-    hint: "抵达首章第10日，三位道友熟络各达到7",
-    ready: (s: SaveData) =>
-      s.day - s.home.startedOn >= 9 &&
-      PEOPLE.every((p) => (s.affinity[p.id] ?? 0) >= 7),
+    hint: "三位道友熟络各达到7",
+    ready: (s: SaveData) => PEOPLE.every((p) => (s.affinity[p.id] ?? 0) >= 7),
     cost: {},
     reward: 24,
   },
@@ -231,7 +235,7 @@ export function friendEvent(s: SaveData, id: string) {
     ) {
       remember(s.events, key);
       s.seeds += 2;
-      return FRIEND_STORIES[id][i] + "（获得2粒种子）";
+      return FRIEND_STORIES[id][i] + "（获得2张种子券）";
     }
   }
   return null;
@@ -242,7 +246,7 @@ export function personLine(s: SaveData, id: string) {
   if (weather(s) === "雨")
     return (
       {
-        lin: "雨会替你浇田，晾着的药草记得收在檐下。",
+        lin: "雨声正好，檐下的药草也快晾好了。",
         yu: "山石湿滑，今天慢些走。你的院子有泉声，隔着雨也听得见。",
         shen: "下雨的日子，窗边听书刚好。旧泉那页图，我替你留着。",
       }[id] ?? "雨声正好。"
@@ -260,7 +264,7 @@ export function welcomeVisitor(s: SaveData) {
   remember(s.home.visits, key);
   s.seeds += 2;
   s.affinity[p.id] = (s.affinity[p.id] ?? 0) + 1;
-  return `${p.name}顺路带来两粒种子，与你坐着听了一会儿${weather(s) === "雨" ? "雨" : "风"}。`;
+  return `${p.name}顺路带来两张种子券，与你坐着听了一会儿${weather(s) === "雨" ? "雨" : "风"}。`;
 }
 export const costText = (cost: Partial<Record<Item, number>>) =>
   Object.entries(cost)

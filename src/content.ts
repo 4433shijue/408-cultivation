@@ -156,8 +156,27 @@ export const PEOPLE = [
       "你替沈砚整理旧书，从夹页里找到一张手绘的村落地图。他没有收回去。“你初来时总在问路，留着吧。”你在地图的一角，添上了自己的小院。",
   },
 ];
-export const LEVELS = [
-  { name: "竹径初探", hp: 18, moves: 10, reward: 2 },
-  { name: "溪谷寻砂", hp: 40, moves: 12, reward: 4 },
-  { name: "云岭试锋", hp: 70, moves: 14, reward: 6 },
+export const BOSSES = [
+  "竹魈",
+  "岩甲山魈",
+  "缠枝妖藤",
+  "赤砂灵蝎",
+  "霜羽玄鹤",
+  "镇岭石灵",
 ];
+export const LEVELS = Array.from({ length: 60 }, (_, i) => {
+  const chapter = Math.floor(i / 20),
+    boss = (i + 1) % 10 === 0;
+  return {
+    name: `第${i + 1}关 · ${boss ? BOSSES[Math.floor(i / 10)] : ["竹径", "溪谷", "云岭"][chapter]}`,
+    hp: 36 + chapter * 24 + (i % 20) * 2 + (boss ? 24 : 0),
+    moves: 16 + chapter * 2,
+    reward: boss ? (chapter + 1) * 2 : 0,
+    sand: boss ? [30, 45, 60][chapter] : [10, 15, 20][chapter],
+    repeat: boss ? [8, 10, 12][chapter] : [3, 4, 5][chapter],
+    boss: boss ? Math.floor(i / 10) : -1,
+    obstacles: chapter === 0 ? 0 : chapter === 1 ? 4 + (i % 3) : 7 + (i % 3),
+    collect: chapter === 2 ? 12 + (i % 8) : 0,
+    kind: i % 5,
+  };
+});

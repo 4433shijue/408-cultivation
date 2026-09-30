@@ -393,7 +393,7 @@ export function createService({
             baseUrl: body.baseUrl.replace(/\/$/, ""),
             model: body.model.trim(),
             key: body.key.trim(),
-            auto: body.auto === true,
+            auto: body.auto !== false,
           };
           return send(200, status());
         }
@@ -408,9 +408,10 @@ export function createService({
         if (req.method === "POST" && url.pathname === "/api/batches")
           return send(202, { id: start() });
         if (req.method === "POST" && url.pathname === "/api/auto") {
-          const excluded = new Set(
-            Array.isArray(body.answered) ? body.answered : [],
-          );
+          const excluded = new Set([
+            ...(Array.isArray(body.answered) ? body.answered : []),
+            ...(Array.isArray(body.reported) ? body.reported : []),
+          ]);
           if (
             config.auto &&
             !current &&

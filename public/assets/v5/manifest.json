@@ -1,0 +1,176 @@
+[
+  {
+    "id": "boss-1",
+    "name": "竹魈",
+    "path": "assets/v5/boss-1.webp",
+    "dimensions": [
+      640,
+      700
+    ],
+    "anchor": [
+      0.5,
+      1
+    ],
+    "region": null,
+    "source": "output/imagegen/v5/boss-1.png",
+    "sourceDimensions": [
+      1199,
+      1312
+    ],
+    "sourceSHA256": "dc2d5ccaff4ac223dad10d9a210b1a6f832878257d59fe8b26a793209176942a",
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "Chinese flat painted fantasy game boss portrait, full body bamboo forest spirit ape, emerald bamboo armor and warm golden eyes, dynamic readable silhouette, refined jade green shanshui palette, paper painted texture, isolated on plain cream background, no text no letters no watermark, one creature only",
+    "status": "generated and visually inspected",
+    "method": "bundled imagegen CLI generate; serial calls; edge-connected cream background extraction; WebP quality 88",
+    "durationSeconds": 132.5,
+    "requestedSize": "1024x1024",
+    "quality": "high",
+    "invocations": 1,
+    "retries": 0
+  },
+  {
+    "id": "boss-2",
+    "name": "岩甲山魈",
+    "path": "assets/v5/boss-2.webp",
+    "dimensions": [
+      583,
+      700
+    ],
+    "anchor": [
+      0.5,
+      1
+    ],
+    "region": null,
+    "source": "output/imagegen/v5/boss-2.png",
+    "sourceDimensions": [
+      1145,
+      1374
+    ],
+    "sourceSHA256": "3d7aafe3af89f8713187ac6a3dbef61357770f1f4ce7075f524be4b3355e7aa2",
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "Chinese flat painted fantasy game boss portrait, full body massive mountain ape with layered slate rock armor and moss, amber eyes, imposing calm stance, refined jade green shanshui palette, warm paper painted texture, isolated on plain cream background, no text no letters no watermark, one creature only",
+    "status": "generated and visually inspected",
+    "method": "bundled imagegen CLI generate; serial calls; edge-connected cream background extraction; WebP quality 88",
+    "durationSeconds": 148.1,
+    "requestedSize": "1024x1024",
+    "quality": "high",
+    "invocations": 1,
+    "retries": 0
+  },
+  {
+    "id": "boss-3",
+    "name": "缠枝妖藤",
+    "path": "assets/v5/boss-3.webp",
+    "dimensions": [
+      467,
+      700
+    ],
+    "anchor": [
+      0.5,
+      1
+    ],
+    "region": null,
+    "source": "output/imagegen/v5/boss-3.png",
+    "sourceDimensions": [
+      1024,
+      1536
+    ],
+    "sourceSHA256": "e8268cdd10367845307c050bd6315e9aee33b36cea7ac125e940810ba063df79",
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "Chinese flat painted fantasy game boss portrait, full body ancient sentient twisting vine tree spirit, roots as feet and long coiling branches, luminous jade heart and small white flowers, elegant eerie friendly fantasy, refined jade green shanshui palette, warm paper painted texture, isolated on plain cream background, no text no letters no watermark, one creature only",
+    "status": "generated and visually inspected",
+    "method": "bundled imagegen CLI generate; serial calls; edge-connected cream background extraction; WebP quality 88",
+    "durationSeconds": 155.6,
+    "requestedSize": "1024x1024",
+    "quality": "high",
+    "invocations": 1,
+    "retries": 0
+  },
+  {
+    "id": "boss-4",
+    "name": "赤砂灵蝎",
+    "path": "assets/v5/boss-4.webp",
+    "dimensions": [
+      700,
+      467
+    ],
+    "anchor": [
+      0.5,
+      1
+    ],
+    "region": null,
+    "source": "output/imagegen/v5/boss-4.png",
+    "sourceDimensions": [
+      1536,
+      1024
+    ],
+    "sourceSHA256": "16d493fa0fb95e219bac1cee64c358866e819d4c0c2d3370052d71bc8dd098f1",
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "Chinese flat painted fantasy game boss portrait, full body red sandstone armored spirit scorpion with eight legs, two large claws and one curling segmented tail, gold mineral seams and crimson jade shell, refined Chinese shanshui game illustration, warm paper painted texture, isolated on plain cream background, entire creature contained inside frame, no text no letters no watermark",
+    "status": "generated and visually inspected",
+    "method": "bundled imagegen CLI generate; serial calls; edge-connected cream background extraction; WebP quality 88",
+    "durationSeconds": 157,
+    "requestedSize": "1024x1024",
+    "quality": "high",
+    "invocations": 1,
+    "retries": 0
+  },
+  {
+    "id": "boss-5",
+    "name": "霜羽玄鹤",
+    "path": "assets/v5/boss-5.webp",
+    "dimensions": [
+      700,
+      700
+    ],
+    "anchor": [
+      0.5,
+      1
+    ],
+    "region": null,
+    "source": "output/imagegen/v5/boss-5.png",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "sourceSHA256": "3628c781b2da1a7282d31ae164ecd50f7a9aaf5a44f9ce64d45aafd16f411be0",
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "Chinese flat painted fantasy game boss portrait, full body majestic celestial crane with two legs and two broad wings spread, white feathers edged in pale icy blue, long elegant neck and red crown, frost crystal plumage, refined jade green shanshui palette, warm paper painted texture, isolated on plain cream background, entire bird contained inside frame, no text no letters no watermark",
+    "status": "generated and visually inspected",
+    "method": "bundled imagegen CLI generate; serial calls; edge-connected cream background extraction; WebP quality 88",
+    "durationSeconds": 154,
+    "requestedSize": "1024x1024",
+    "quality": "high",
+    "invocations": 1,
+    "retries": 0
+  },
+  {
+    "id": "boss-6",
+    "name": "镇岭石灵",
+    "path": "assets/v5/boss-6.webp",
+    "dimensions": [
+      668,
+      700
+    ],
+    "anchor": [
+      0.5,
+      1
+    ],
+    "region": null,
+    "source": "output/imagegen/v5/boss-6.png",
+    "sourceDimensions": [
+      1225,
+      1284
+    ],
+    "sourceSHA256": "7b369fec7379104f0f98d639c488845359c3b45bca7e30b15664f84737ac305b",
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "Chinese flat painted fantasy game final boss portrait, full body ancient mountain guardian stone golem, NOT an ape, broad carved geometric stone head with calm angular face, two enormous rock arms and two sturdy legs, miniature pine trees and jade mineral veins growing on shoulders, bronze talisman ornaments, majestic dignified stance, refined jade green shanshui palette, warm paper painted texture, isolated on plain cream background, entire creature contained inside frame, no text no letters no watermark",
+    "status": "generated and visually inspected",
+    "method": "bundled imagegen CLI generate; serial calls; edge-connected cream background extraction; WebP quality 88",
+    "durationSeconds": 88.5,
+    "requestedSize": "1024x1024",
+    "quality": "high",
+    "invocations": 1,
+    "retries": 0
+  }
+]

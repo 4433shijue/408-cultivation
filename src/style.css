@@ -1769,3 +1769,146 @@ form > .primary {
     height: 24px;
   }
 }
+
+.campaign {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 18%;
+  bottom: 4%;
+  overflow: auto;
+  padding: 20px;
+  pointer-events: auto;
+}
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+}
+.level-grid button {
+  min-width: 0;
+  padding: 10px 2px;
+  font-size: 12px;
+}
+.boss-level {
+  border: 2px solid #bd8b42 !important;
+  background: #efe1bd !important;
+}
+.enemy-card small,
+.enemy-card span {
+  display: block;
+}
+.enemy-card .icon {
+  width: 30px;
+  height: 30px;
+  vertical-align: middle;
+}
+.enemy-card {
+  max-width: 23%;
+  font-size: 13px;
+}
+.enemy.charging {
+  filter: drop-shadow(0 0 16px #e6b846);
+  animation: boss-breathe 1s infinite alternate;
+}
+.enemy {
+  animation: boss-arrive 0.6s ease-out;
+}
+.enemy.defeated {
+  animation: none;
+}
+.collection-grid article {
+  padding: 12px;
+  background: #f2ead4;
+  border-radius: 12px;
+}
+.collection-grid article button {
+  margin: 3px;
+}
+.collection-grid article .icon {
+  width: 66px;
+  height: 66px;
+}
+@keyframes boss-breathe {
+  to {
+    transform: scale(1.04);
+  }
+}
+@keyframes boss-arrive {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 950px) {
+  .campaign {
+    left: 3%;
+    right: 3%;
+    top: 18%;
+    padding: 10px;
+  }
+  .level-grid {
+    gap: 3px;
+  }
+  .level-grid button {
+    padding: 7px 0;
+    font-size: 10px;
+  }
+  .enemy-card {
+    font-size: 10px;
+  }
+  .enemy-card .icon {
+    width: 20px;
+    height: 20px;
+  }
+  .farm-tools {
+    gap: 3px;
+  }
+  .farm-tools button {
+    padding: 5px;
+    font-size: 10px;
+  }
+}
+.reduced-motion .enemy {
+  animation: none;
+}
+
+.enemy-card small {
+  color: #f6efdc;
+  line-height: 1.5;
+}
+.enemy-card {
+  max-height: 30%;
+  overflow: auto;
+  pointer-events: auto;
+}
+.enemy-card b {
+  color: #ffdc87;
+}
+.campaign {
+  bottom: 10%;
+}
+
+@media (max-width: 950px) {
+  .enemy-card {
+    left: 2%;
+    right: auto;
+    top: 30%;
+    max-width: 26%;
+    max-height: 48%;
+    padding: 10px;
+    font-size: 11px;
+  }
+  .enemy-card span {
+    font-size: 10px;
+  }
+  .enemy {
+    top: 22%;
+    height: 50%;
+    width: 23%;
+  }
+}

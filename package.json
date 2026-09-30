@@ -1,6 +1,6 @@
 {
   "name": "408xiuxian",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,8 @@
     "format": "prettier --write src server tests vite.config.ts",
     "build:web": "node scripts/build-web.mjs",
     "test:web": "node tests/web-browser.mjs",
-    "test:rules": "node scripts/check-core.mjs"
+    "test:rules": "node scripts/check-core.mjs",
+    "test:v05": "node tests/v05-browser.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"

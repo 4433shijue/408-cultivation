@@ -1,3 +1,14 @@
+import {
+  HOURS,
+  PRICES,
+  syncTime,
+  remaining,
+  buySeeds,
+  canRescue,
+  rescue,
+  fertilize,
+} from "./realtime";
+import { buyTool, useTool } from "./battle";
 import { WEB_MODE, KEY_LOCATION } from "./runtime";
 import { Companion } from "./companion/controller";
 import type { NpcId } from "./companion/types";
@@ -33,7 +44,6 @@ import {
   loadSave,
   migrate,
   newSave,
-  nextDay,
   onPlot,
   persist,
   rewardBattle,
@@ -53,7 +63,7 @@ let activeQuestion: Question | null = null;
 let review = false;
 let answeredResult: boolean | null = null;
 let dialogKind = loaded.error ? "recovery" : save ? "" : "intro";
-let sideClosed = false;
+let sideClosed = window.innerWidth < 1000;
 let toastTimer = 0;
 let breakthroughPending = false;
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) =>
@@ -81,14 +91,16 @@ $("#app").innerHTML =
   `<div class="game-shell"><header id="header"></header><div class="workspace"><section id="scene" class="scene farm"><div class="scene-shade"></div><div id="scene-heading"></div><div id="canvas"></div><div id="scene-content"></div><div id="scene-footer"></div><button id="side-toggle" data-action="toggle-side" title="收起或展开行程">行程</button></section><aside id="sidebar"></aside></div><nav id="nav"></nav></div><div id="modal-root"></div><div id="toast" role="status"></div><div class="rotate-note">横过屏幕，走进青禾村</div><input id="import-file" type="file" accept="application/json,.json" hidden>`;
 const companion = new Companion({
   getSave: () => save,
-  updateGame: (fn) => {
-    if (!save) return;
-    const latest = localStorage.getItem(SAVE_KEY);
-    if (latest) save = migrate(JSON.parse(latest));
-    fn(save);
-    persist(save);
-    render();
-  },
+  updateGame: async (fn) =>
+    gameTransaction(() => {
+      if (!save) return;
+      const latest = localStorage.getItem(SAVE_KEY);
+      if (latest) save = migrate(JSON.parse(latest));
+      syncTime(save);
+      fn(save);
+      persist(save);
+      render();
+    }),
   notify: message,
   closeGameModal: () => {
     closeModal();
@@ -127,7 +139,7 @@ game.events.once("world-ready", () => {
 async function syncQuestions() {
   const snapshot = save;
   await refreshQuestions(snapshot);
-  if (snapshot === save && save) persist(save);
+  // The question library is independent; do not write a stale game snapshot here.
 }
 function message(text: string) {
   $("#toast").textContent = text;
@@ -166,7 +178,7 @@ function goal() {
     : !t.crafted
       ? "制作一份灵茶"
       : !t.fought
-        ? "去竹径取得星砂"
+        ? "完成第一关试炼"
         : !t.answered
           ? "静心回答一道题"
           : !t.chatted
@@ -177,10 +189,11 @@ function goal() {
 }
 function render() {
   const s = save;
+  if (s) syncTime(s);
   document.body.classList.toggle("reduced-motion", s?.reducedMotion ?? false);
   $(".workspace").classList.toggle("side-closed", sideClosed);
   $("#header").innerHTML =
-    `<div class="brand"><span class="seal">灵</span><div><small>青禾村 · 山居岁月</small><h1>灵田异闻</h1></div></div>${s ? `<div class="profile"><img src="assets/v2/hero-${s.gender}.png" alt="主角"><div><strong>${esc(s.name)}</strong><small>${s.breakthrough ? "炼气中境" : "炼气初境"} · 第 ${s.day} 日 · ${weather(s)}</small></div></div><div class="resources"><span>${icon(31)}${s.coins}<small>灵石</small></span><span>${icon(32)}${s.seeds}<small>种子</small></span><div class="qi"><small>修为 ${s.qi} / ${s.breakthrough ? 100 : 50}</small><div><i style="width:${Math.min(100, (s.qi / (s.breakthrough ? 100 : 50)) * 100)}%"></i></div></div></div>` : '<p class="tagline">栽一畦灵草，问一程仙途</p>'}${btn(icon(35) + "<span>设置</span>", "settings", "settings-button")}`;
+    `<div class="brand"><span class="seal">灵</span><div><small>青禾村 · 山居岁月</small><h1>灵田异闻</h1></div></div>${s ? `<div class="profile"><img src="assets/v2/hero-${s.gender}.png" alt="主角"><div><strong>${esc(s.name)}</strong><small>${s.breakthrough ? "炼气中境" : "炼气初境"} · ${new Date(s.lastSeen).toLocaleDateString("zh-CN", { timeZone: "Asia/Shanghai" })} · ${weather(s)}</small></div></div><div class="resources"><span>${icon(31)}${s.coins}<small>金币</small></span><span>${icon(32)}${s.sand}<small>灵砂</small></span><div class="qi"><small>修为 ${s.qi} / ${s.breakthrough ? 100 : 50}</small><div><i style="width:${Math.min(100, (s.qi / (s.breakthrough ? 100 : 50)) * 100)}%"></i></div></div></div>` : '<p class="tagline">栽一畦灵草，问一程仙途</p>'}${btn(icon(35) + "<span>设置</span>", "settings", "settings-button")}`;
   $("#nav").innerHTML = tabs
     .map(
       (t) =>
@@ -196,7 +209,7 @@ function render() {
   if (s) sound.weather(weather(s) === "雨");
   const t = tabs.find((t) => t.id === tab)!;
   $("#scene-heading").innerHTML =
-    `<small>青禾村 / ${t.name}</small><h2>${t.name}</h2><p>${tab === "farm" ? (s && weather(s) === "雨" ? "雨落檐前，九畦同润。" : "晨露未晞，草木正好。") : tab === "battle" ? "循着山风，去寻一捧星砂。" : tab === "craft" ? "把田间的收获，做成日子的滋味。" : tab === "cultivate" ? "世人听风，你听见另一种答案。" : "山水之间，总有人记得你。"}</p>`;
+    `<small>青禾村 / ${t.name}</small><h2>${t.name}</h2><p>${tab === "farm" ? (s && weather(s) === "雨" ? "雨落檐前，九畦同润。" : "晨露未晞，草木正好。") : tab === "battle" ? "六十关试炼，循山风而行。" : tab === "craft" ? "把田间的收获，做成日子的滋味。" : tab === "cultivate" ? "世人听风，你听见另一种答案。" : "山水之间，总有人记得你。"}</p>`;
   $("#canvas").classList.toggle(
     "inactive",
     !s || !["farm", "battle"].includes(tab),
@@ -215,7 +228,7 @@ function render() {
 function sceneHTML() {
   const s = save!;
   if (tab === "farm")
-    return `<img class="cloud-layer" src="assets/v2/fx-0.png" alt=""><div class="rain-layer"></div><div class="farm-caption">${weather(s) === "雨" ? "雨水润田 · 新播种也无需浇水" : "点田块播种、浇水或收获"}</div><div class="home-props">${Object.entries(
+    return `<img class="cloud-layer" src="assets/v2/fx-0.png" alt=""><div class="rain-layer"></div><div class="farm-caption">${weather(s) === "雨" ? "听雨种田 · 浇水可缩短10%时间" : "点田块播种、浇水或收获"}</div><div class="home-props">${Object.entries(
       FACILITIES,
     )
       .map(
@@ -225,20 +238,19 @@ function sceneHTML() {
       .join(
         "",
       )}</div>${s.events.includes("yu-3") || s.home.chapter === 6 ? '<img class="garden-lantern" src="assets/v3/facility-6.png" alt="泉边石灯">' : ""}${s.events.includes("shen-3") || s.home.chapter === 6 ? '<img class="garden-table" src="assets/v3/facility-7.png" alt="故人茶桌">' : ""}${visitor(s) && !s.home.visits.includes(`visit-${s.day}`) ? btn(`${visitor(s)!.name} 来访`, "visit", "visitor-button") : ""}`;
-  if (tab === "battle")
-    return `<img class="enemy ${s.battle?.status === "won" ? "defeated" : ""}" src="assets/v2/beast.png" alt="山魈"><div class="enemy-card"><strong>守山山魈</strong><span>${s.battle ? `气血 ${s.battle.hp} · 余 ${s.battle.moves} 步` : "胜利取得星砂；失败可重试"}</span></div>${!s.battle ? `<div class="battle-start paper"><h3>沿山路而行</h3><p>交换相邻灵纹，三枚相连即可攻击。每消除一枚造成 2 点伤害；用尽步数前击退山魈。</p>${LEVELS.map((l, i) => btn(`${l.name} · ${l.reward} 星砂`, "battle-" + i, "primary", i > 0 && !s.tutorial.fought)).join("")}</div>` : s.battle.status !== "playing" ? `<div class="battle-result paper"><h3>${s.battle.status === "won" ? "山风送归人" : "暂且歇一歇"}</h3><p>${s.battle.status === "won" ? `收获 ${LEVELS[s.battle.level].reward} 星砂，已放入背包。` : "本局以外的进度都还在。"}</p>${btn("再入山路", "battle-menu", "primary")}</div>` : ""}`;
+  if (tab === "battle") return battleHTML(s);
   if (tab === "craft")
     return `<div class="craft-surface"><div class="craft-grid">${s.board.map((i, n) => `<button class="craft-cell" data-cell="${n}" aria-label="制作格 ${n + 1}${i ? " " + ITEMS[i].name : ""}">${i ? icon(ITEMS[i].icon) + `<small>${ITEMS[i].name}</small>` : '<span class="slot-dot"></span>'}</button>`).join("")}</div><div class="craft-result paper"><small>合成预览</small>${craftPreview(s) ? icon(ITEMS[craftPreview(s)!.output].icon) + `<h3>${ITEMS[craftPreview(s)!.output].name}</h3>` : "<h3>等待草木相逢</h3><p>从背包拖入材料，也可选中后点击空格。</p>"}${btn("合成成品", "craft", "primary", !craftPreview(s))}${btn("收回材料", "clear-board", "text-button")}${s.home.facilities.workshop ? btn("批量制作 · 三份", "batch-menu") : ""}${s.home.drying.length ? btn("查看晾晒架", "home") : ""}</div></div>`;
   if (tab === "cultivate")
-    return `<img class="meditating" src="assets/v2/meditate-${s.gender}.png" alt="主角静坐"><img class="aura" src="assets/v2/fx-3.png" alt=""><div class="cultivation-card paper"><small>仅你可见的系统</small><h3>识海问道</h3><p>答对，修为增长。答错，读过解析后再继续今天的生活。</p><div class="cultivation-count"><b>${s.qi}</b><span>修为 · ${available(s).length} 道待学新题</span></div>${btn(s.cultivatedOn === s.day ? "今日已修炼" : "开始修炼", "question", "primary", s.cultivatedOn === s.day || !available(s).length)}<div class="button-row">${btn(`待答 ${s.pending.length}`, "pending")}${btn("作答与复习", "history")}</div><small>${online ? "题库已就绪" : "离线题库可用"} · 每题只结算一次</small></div>`;
+    return `<img class="meditating" src="assets/v2/meditate-${s.gender}.png" alt="主角静坐"><img class="aura" src="assets/v2/fx-3.png" alt=""><div class="cultivation-card paper"><small>仅你可见的系统</small><h3>识海问道</h3><p>答对，修为增长。答错，读过解析后再继续今天的生活。</p><div class="cultivation-count"><b>${s.qi}</b><span>修为 · ${available(s).length} 道待学新题</span></div>${btn("开始修炼", "question", "primary", !available(s).length)}<p>今日新题奖励机会 ${Math.max(0, 5 - s.answers.filter((a) => a.day === s.day).length)} / 5 · 之后可继续练习</p><div class="button-row">${btn(`待答 ${s.pending.length}`, "pending")}${btn("作答与复习", "history")}</div><small>${online ? "题库已就绪" : "离线题库可用"} · 每题只结算一次</small></div>`;
   return `<div class="people-stage">${PEOPLE.map((p, i) => `<button class="person-card" data-person="${p.id}"><img src="assets/v2/person-${i}-${(s.affinity[p.id] ?? 0) >= 3 ? 1 : 0}.webp" alt="${p.name}"><div><small>${p.role}</small><h3>${p.name}</h3><span>熟络 ${s.affinity[p.id] ?? 0} · ${s.events.includes(p.id + "-3") ? "知交" : s.events.includes(p.id + "-2") ? "相知" : s.events.includes(p.id) ? "已结缘" : "初相识"}</span></div></button>`).join("")}</div>`;
 }
 function footerHTML() {
   const s = save!;
   if (tab === "farm")
-    return `<div class="farm-tools">${btn(icon(CROPS[s.selectedCrop].icon + 2) + CROPS[s.selectedCrop].name + " · 换种", "crops", "chosen")}${btn("家园修缮", "home")}${btn("引泉浇田", "water-all", "", !s.home.facilities.spring)}${btn("施灵壤", "fertilize", "", s.inventory.fertilizer === 0)}${btn("歇息 · 下一日", "sleep", "primary")}</div>`;
+    return `<div class="farm-tools">${btn(icon(CROPS[s.selectedCrop].icon + 2) + CROPS[s.selectedCrop].name + " · 换种", "crops", "chosen")}${btn("家园修缮", "home")}${btn("引泉浇田", "water-all", "", !s.home.facilities.spring)}${btn("施灵壤", "fertilize", "", s.inventory.fertilizer === 0)}${btn("种子商店", "seed-shop", "primary")}</div>`;
   if (tab === "battle")
-    return '<div class="scene-hint">点选相邻两枚灵纹交换 · 无消除会退回 · 胜利奖励只发放一次</div>';
+    return `<div class="farm-tools">${btn("关卡地图", "battle-menu")}${btn("灵砂商店", "tool-shop")}${s.battle?.status === "playing" ? ["shuffle", "break", "steps"].map((id, i) => btn(["洗牌符", "破障符", "续步符"][i] + " ×" + s.tools[id], "use-tool:" + id, "", s.battle!.toolUsed || !s.tools[id])).join("") : ""}</div>`;
   return "";
 }
 function sidebarHTML() {
@@ -264,19 +276,19 @@ function sidebarHTML() {
               )
               .join(" · ")}</small></span></button>`,
         ).join("")}</div>`
-      : `<div class="side-section order"><small>村中委托 · 可反复交付</small><h4>${order.name}</h4><p>${ITEMS[order.item].name} × ${order.count} <span>→ ${order.coins} 灵石</span></p><div class="button-row">${btn("交付", "order", "primary", s.inventory[order.item] < order.count || s.locked.includes(order.item))}${btn("换一份", "next-order")}</div></div>`
-  }<div class="side-section"><h4>补给小铺</h4><div class="button-row">${btn("免费种子", "seed-gift", "", s.seeds > 0)}${btn("兑换星砂 · 8灵石", "buy-ore", "", s.coins < 8)}</div>${btn("出售选中物品", "sell", "text-button", s.inventory[s.selectedItem] === 0 || s.locked.includes(s.selectedItem))}</div><p class="side-note">所有草木按游戏日生长。<br>离开多久，也不会枯萎。</p>`;
+      : `<div class="side-section order"><small>村中委托 · 可反复交付</small><h4>${order.name}</h4><p>${ITEMS[order.item].name} × ${order.count} <span>→ ${order.coins + order.seeds * 2} 金币</span></p><div class="button-row">${btn("交付", "order", "primary", s.inventory[order.item] < order.count || s.locked.includes(order.item))}${btn("换一份", "next-order")}</div></div>`
+  }<div class="side-section"><h4>补给小铺</h4><div class="button-row">${btn("免费种子", "seed-gift", "", !canRescue(s))}${btn("兑换星砂 · 8金币", "buy-ore", "", s.coins < 8)}</div>${btn("出售选中物品", "sell", "text-button", s.inventory[s.selectedItem] === 0 || s.locked.includes(s.selectedItem))}</div><p class="side-note">草木按现实时间生长。<br>离开多久，也不会枯萎。</p>`;
 }
 function cropPicker() {
   const s = save!;
   dialogKind = "crops";
   modal(
-    `<div class="modal-head"><h2>今日种些什么</h2>${btn("返回", "close")}</div><p>共用基础种子，每畦消耗一粒；雨天无需另行浇水。</p><div class="collection-grid">${Object.entries(
+    `<div class="modal-head"><h2>今日种些什么</h2>${btn("返回", "close")}</div><p>每畦消耗对应种子一粒；离线继续生长，成熟不会枯萎。</p><div class="collection-grid">${Object.entries(
       CROPS,
     )
       .map(
         ([id, c]) =>
-          `<button data-crop="${id}" ${id !== "herb" && !s.tutorial.crafted ? "disabled" : ""}>${icon(c.icon + 2)}<strong>${c.name}</strong><small>${c.days}个浇水日成熟 · ${s.home.harvested.includes(id) ? "已收获" : "尚待相识"}</small></button>`,
+          `<button data-crop="${id}" ${id !== "herb" && !s.tutorial.crafted ? "disabled" : ""}>${icon(c.icon + 2)}<strong>${c.name}</strong><small>${HOURS[id as Crop]}小时成熟 · 种子${s.seedStock[id as Crop]} · ${s.home.harvested.includes(id) ? "已收获" : "尚待相识"}</small></button>`,
       )
       .join("")}</div><p>完成第一份灵茶后，六种作物全部开放。</p>`,
   );
@@ -290,11 +302,11 @@ function homeModal() {
     )
       .map(
         ([id, f]) =>
-          `<article><img src="assets/v3/facility-${f.art + (s.home.facilities[id as Facility] ? 1 : 0)}.png" alt="${f.name}"><h3>${f.name}</h3><p>${f.description}</p><small>${s.home.facilities[id as Facility] ? "修缮完成" : `${costText(f.cost)} · ${f.coins}灵石`}</small>${btn(s.home.facilities[id as Facility] ? "已修缮" : "动手修缮", "upgrade:" + id, "primary", s.home.facilities[id as Facility] || !canPay(s, f.cost, f.coins))}</article>`,
+          `<article><img src="assets/v3/facility-${f.art + (s.home.facilities[id as Facility] ? 1 : 0)}.png" alt="${f.name}"><h3>${f.name}</h3><p>${f.description}</p><small>${s.home.facilities[id as Facility] ? "修缮完成" : `${costText(f.cost)} · ${f.coins}金币`}</small>${btn(s.home.facilities[id as Facility] ? "已修缮" : "动手修缮", "upgrade:" + id, "primary", s.home.facilities[id as Facility] || !canPay(s, f.cost, f.coins))}</article>`,
       )
       .join(
         "",
-      )}</div><div class="drying-status"><h3>檐下晾晒 · ${s.home.drying.reduce((n, d) => n + d.count, 0)} / 3</h3><p>${s.home.drying.length ? s.home.drying.map((d) => `${d.count}份静心干草 · ${d.readyOn <= s.day ? "已晾好" : `第${d.readyOn}日可收`}`).join("；") : "修好晾晒架后，在作坊用青灵草与薄荷配制。"}</p>${btn("收取干草", "collect-drying", "", !s.home.drying.some((d) => d.readyOn <= s.day))}</div>`,
+      )}</div><div class="drying-status"><h3>檐下晾晒 · ${s.home.drying.reduce((n, d) => n + d.count, 0)} / 3</h3><p>${s.home.drying.length ? s.home.drying.map((d) => `${d.count}份静心干草 · ${d.readyOn <= s.lastSeen ? "已晾好" : remaining(d.readyOn - s.lastSeen)}`).join("；") : "修好晾晒架后，在作坊用青灵草与薄荷配制。"}</p>${btn("收取干草", "collect-drying", "", !s.home.drying.some((d) => d.readyOn <= s.lastSeen))}</div>`,
     true,
   );
 }
@@ -314,7 +326,7 @@ function chapterModal() {
             )
             .join(
               " · ",
-            )}</p><small>完成奖励 ${c.reward} 灵石、3 粒种子 · 无期限</small></div>${btn("完成这一段行程", "claim-chapter", "primary", !c.ready(s) || !canPay(s, c.cost))}`
+            )}</p><small>完成奖励 ${c.reward} 金币、3 张种子券 · 无期限</small></div>${btn("完成这一段行程", "claim-chapter", "primary", !c.ready(s) || !canPay(s, c.cost))}`
         : `<h2>泉暖青禾</h2><img class="chapter-ending" src="assets/v3/ending.webp" alt="三位故人在复苏的灵泉旁相聚"><p class="story-text">旧泉重新流过院角。有人来借一盏茶，有人顺路放下一包种子。你终于不再只是经过这里的人。</p><p>首章完成。石灯与茶桌已安放在院中，种田、委托、修炼与友情故事仍可继续。</p>`
     }<div class="chapter-road">${CHAPTER.map((step, i) => `<span class="${i < s.home.chapter ? "done" : ""}">${i < s.home.chapter ? "已记下" : i === s.home.chapter ? "正在写" : "待续"} · ${step.title}</span>`).join("")}</div>`,
     !c,
@@ -329,7 +341,7 @@ function journalModal() {
     )
       .map(
         ([id, c]) =>
-          `<article>${icon(c.icon + 2)}<strong>${c.name}</strong><small>${c.days}个浇水日 · ${s.home.harvested.includes(id) ? "已收获" : "未记录"}</small></article>`,
+          `<article>${icon(c.icon + 2)}<strong>${c.name}</strong><small>${HOURS[id as Crop]}小时成熟 · ${s.home.harvested.includes(id) ? "已收获" : "未记录"}</small></article>`,
       )
       .join(
         "",
@@ -403,10 +415,6 @@ function openQuestion(id?: string, isReview = false) {
     message("暂无可用题目，可以继续经营或补充题库。");
     return;
   }
-  if (!review && save.cultivatedOn === save.day) {
-    message("今日修炼已完成，明日再来。");
-    return;
-  }
   selectedAnswer = -1;
   answeredResult = null;
   dialogKind = "question";
@@ -415,7 +423,7 @@ function openQuestion(id?: string, isReview = false) {
 function questionModal() {
   const q = activeQuestion!;
   modal(
-    `<div class="modal-head"><small>${esc(q.subject)} · ${review ? "温故知新" : "识海问答"}</small>${btn("稍后", "defer", "text-button", answeredResult !== null)}</div><h2>${review ? "再读一遍，亦有所得" : "静心一问"}</h2><p class="question-stem">${esc(q.stem)}</p><div class="answer-list">${q.options.map((o, i) => `<button class="answer-choice ${selectedAnswer === i ? "selected" : ""} ${answeredResult !== null && i === q.answer ? "correct" : ""}" data-answer="${i}" ${answeredResult !== null ? "disabled" : ""}><b>${"ABCD"[i]}</b>${esc(o)}</button>`).join("")}</div>${answeredResult === null ? btn("确认答案", "submit-answer", "primary", selectedAnswer < 0) : `<div class="explanation"><strong>${answeredResult ? "回答正确" : "本次未答对"} · ${review ? "复习不重复发放修为" : answeredResult ? "修为 +10" : "修为不变"}</strong><p>正确答案 ${"ABCD"[q.answer]}。${esc(q.explanation)}</p></div>${btn("继续今日行程", "close-result", "primary")}${btn("题目有误 · 暂停投放", "report", "text-button")}`}`,
+    `<div class="modal-head"><small>${esc(q.subject)} · ${review ? "温故知新" : "识海问答"}</small>${btn("稍后", "defer", "text-button", answeredResult !== null)}</div><h2>${review ? "再读一遍，亦有所得" : "静心一问"}</h2><p class="question-stem">${esc(q.stem)}</p><div class="answer-list">${q.options.map((o, i) => `<button class="answer-choice ${selectedAnswer === i ? "selected" : ""} ${answeredResult !== null && i === q.answer ? "correct" : ""}" data-answer="${i}" ${answeredResult !== null ? "disabled" : ""}><b>${"ABCD"[i]}</b>${esc(o)}</button>`).join("")}</div>${answeredResult === null ? btn("确认答案", "submit-answer", "primary", selectedAnswer < 0) : `<div class="explanation"><strong>${answeredResult ? "回答正确" : "本次未答对"} · ${review ? "复习不重复发放修为" : answeredResult && sRewarded() ? "修为 +10" : "修为不变（答错或今日额度已用完）"}</strong><p>正确答案 ${"ABCD"[q.answer]}。${esc(q.explanation)}</p></div>${btn("继续今日行程", "close-result", "primary")}${btn("题目有误 · 暂停投放", "report", "text-button")}`}`,
   );
 }
 function showHistory(pending = false) {
@@ -442,7 +450,7 @@ function showHistory(pending = false) {
 async function settings() {
   dialogKind = "settings";
   modal(
-    `<div class="modal-head"><h2>山居设置</h2>${btn("返回", "close", "text-button")}</div><div class="settings-grid"><section><h3>进度与体验</h3><p>进度保存在当前浏览器。更换浏览器前请导出。</p><div class="button-row">${btn("导出存档", "export")}${btn("导入存档", "import")}</div>${btn(save?.reducedMotion ? "恢复动态效果" : "减少动态效果", "motion")}${btn(save?.home.sound ? "关闭环境音效" : "开启环境音效", "sound")}${btn("AI 道友设置", "companion-config")}${btn("课程与共修", "companion-setup")}${btn("删除存档并重开", "reset", "danger")}<hr><h3>题库与批次</h3><div id="service-status">${WEB_MODE ? "正在读取浏览器题库…" : "正在连接本机服务…"}</div><div class="button-row">${btn("生成一批", "generate")}${btn("停止生成", "cancel-generation")}</div><div class="button-row">${btn("导出题库", "export-questions")}${btn("人工抽检", "review-questions")}</div></section><section><h3>AI 题库接口</h3><p>未配置也能使用 24 道基础题。每批最多 10 道，每次${WEB_MODE ? "页面" : "服务"}会话最多 3 批；调用可能产生费用。${WEB_MODE ? "网页版由你的浏览器直连所填接口，需支持HTTPS和跨域；刷新后重新填写密钥。" : ""}</p><form id="api-form"><label>兼容接口地址<input name="baseUrl" type="url" required placeholder="https://你的服务/v1"></label><label>文本模型<input name="model" required placeholder="填写文本模型标识"></label><label>密钥 · 只在${KEY_LOCATION}保存<input name="key" type="password" required autocomplete="off"></label><label class="checkbox"><input name="auto" type="checkbox"> 可用新题少于 10 道时自动补充</label><button class="primary" type="submit">保存本次会话配置</button></form><div class="button-row">${btn("测试连接", "test-api")}${btn("清除密钥", "clear-key")}</div></section></div>`,
+    `<div class="modal-head"><h2>山居设置</h2>${btn("返回", "close", "text-button")}</div><div class="settings-grid"><section><h3>进度与体验</h3><p>进度保存在当前浏览器。更换浏览器前请导出。</p><div class="button-row">${btn("导出存档", "export")}${btn("导入存档", "import")}</div>${btn(save?.reducedMotion ? "恢复动态效果" : "减少动态效果", "motion")}${btn(save?.home.sound ? "关闭环境音效" : "开启环境音效", "sound")}${btn("AI 道友设置", "companion-config")}${btn("课程与共修", "companion-setup")}${btn("删除存档并重开", "reset", "danger")}<hr><h3>题库与批次</h3><div id="service-status">${WEB_MODE ? "正在读取浏览器题库…" : "正在连接本机服务…"}</div><div class="button-row">${btn("生成一批", "generate")}${btn("停止生成", "cancel-generation")}</div><div class="button-row">${btn("导出题库", "export-questions")}${btn("人工抽检", "review-questions")}</div></section><section><h3>AI 题库接口</h3><p>未配置也能使用 24 道基础题。每批最多 10 道，每次${WEB_MODE ? "页面" : "服务"}会话最多 3 批；调用可能产生费用。${WEB_MODE ? "网页版由你的浏览器直连所填接口，需支持HTTPS和跨域；刷新后重新填写密钥。" : ""}</p><form id="api-form"><label>兼容接口地址<input name="baseUrl" type="url" required placeholder="https://你的服务/v1"></label><label>文本模型<input name="model" required placeholder="填写文本模型标识"></label><label>密钥 · 只在${KEY_LOCATION}保存<input name="key" type="password" required autocomplete="off"></label><label class="checkbox"><input name="auto" type="checkbox" checked> 可用新题少于 10 道时自动补充</label><button class="primary" type="submit">保存本次会话配置</button></form><div class="button-row">${btn("测试连接", "test-api")}${btn("清除密钥", "clear-key")}</div></section></div>`,
     true,
   );
   await status();
@@ -452,7 +460,7 @@ async function status() {
     const d = await api("status");
     const el = document.querySelector("#service-status");
     if (el)
-      el.innerHTML = `<p>${d.configured ? "接口已配置" : "未配置接口"} · 可用 ${d.available} 道 · 隔离 ${d.quarantined} 道</p><p>批次 ${d.used}/${d.limit} · 请求 ${d.calls} 次</p>${d.batches.map((b: any) => `<div class="batch">${esc(({ queued: "排队", generating: "生成中", validating: "校验中", completed: "完成", partial: "部分通过", failed: "失败", cancelled: "已取消" } as Record<string, string>)[b.status] ?? b.status)} · 通过 ${b.approved} / 隔离 ${b.quarantined}${b.error ? `<small>${esc(b.error)}</small>` : ""}</div>`).join("")}`;
+      el.innerHTML = `<p>${d.configured ? "接口已配置" : "未配置接口"} · 已审核 ${d.available} 道 · 待学 ${save ? available(save).length : d.available} 道 · 隔离 ${d.quarantined} 道</p><p>批次 ${d.used}/${d.limit} · 请求 ${d.calls} 次</p>${d.batches.map((b: any) => `<div class="batch">${esc(({ queued: "排队", generating: "生成中", validating: "校验中", completed: "完成", partial: "部分通过", failed: "失败", cancelled: "已取消" } as Record<string, string>)[b.status] ?? b.status)} · 通过 ${b.approved} / 隔离 ${b.quarantined}${b.error ? `<small>${esc(b.error)}</small>` : ""}</div>`).join("")}`;
     if (dialogKind === "settings") {
       const f = $<HTMLFormElement>("#api-form");
       if (
@@ -465,7 +473,8 @@ async function status() {
         input.value = d.baseUrl;
         input.dataset.filled = "true";
         (f.elements.namedItem("model") as HTMLInputElement).value = d.model;
-        (f.elements.namedItem("auto") as HTMLInputElement).checked = d.auto;
+        (f.elements.namedItem("auto") as HTMLInputElement).checked =
+          d.configured ? d.auto : true;
       }
     }
   } catch {
@@ -492,6 +501,14 @@ function download(name: string, data: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 async function handleTile(index: number) {
+  if (busy) return;
+  try {
+    await gameTransaction(() => handleTileUnlocked(index));
+  } catch (e) {
+    message((e as Error).message);
+  }
+}
+async function handleTileUnlocked(index: number) {
   if (!save || busy || dialogKind) return;
   if (tab === "farm") {
     const p = save.plots[index],
@@ -508,14 +525,20 @@ async function handleTile(index: number) {
     try {
       if (first !== null && first !== index && result !== "selected")
         await scene?.exchange(first, index, result !== "invalid");
-      if (rewardBattle(save))
-        message(`历练有得，${LEVELS[b.level].reward} 星砂已入行囊。`);
+      if (rewardBattle(save)) message("试炼完成，灵砂与关卡奖励已入行囊。");
       else if (result === "invalid") message("未连成三枚，交换已退回。");
       commit();
       if (result === "matched" || result === "won") scene?.drop();
     } finally {
       busy = false;
       render();
+      if ((result === "matched" || result === "won") && !save.reducedMotion)
+        document
+          .querySelector(".enemy")
+          ?.animate(
+            [{ filter: "brightness(2)" }, { filter: "brightness(1)" }],
+            { duration: 350 },
+          );
     }
   }
 }
@@ -531,6 +554,32 @@ async function action(id: string) {
   if (busy) return;
   if (id.startsWith("companion-")) {
     await companion.open(undefined, id.slice(10));
+    return;
+  }
+  if (id === "seed-shop") {
+    seedShop();
+    return;
+  }
+  if (id.startsWith("seed-buy:") || id.startsWith("seed-voucher:")) {
+    const [kind, crop, count] = id.split(":");
+    buySeeds(save!, crop as Crop, Number(count), kind === "seed-voucher");
+    commit();
+    seedShop();
+    return;
+  }
+  if (id === "tool-shop") {
+    toolShop();
+    return;
+  }
+  if (id.startsWith("buy-tool:")) {
+    buyTool(save!, id.slice(9));
+    commit();
+    toolShop();
+    return;
+  }
+  if (id.startsWith("use-tool:")) {
+    useTool(save!, id.slice(9));
+    commit();
     return;
   }
   if (id === "settings") {
@@ -559,6 +608,7 @@ async function action(id: string) {
     download(
       "灵田异闻-原始备份.json",
       localStorage.getItem(SAVE_KEY) ??
+        localStorage.getItem("lingtian-408-save-v3") ??
         localStorage.getItem("lingtian-408-save-v2") ??
         localStorage.getItem("lingtian-408-save-v1") ??
         "{}",
@@ -576,6 +626,7 @@ async function action(id: string) {
     localStorage.removeItem(SAVE_KEY);
     localStorage.removeItem("lingtian-408-save-v1");
     localStorage.removeItem("lingtian-408-save-v2");
+    localStorage.removeItem("lingtian-408-save-v3");
     save = null;
     void sound.set(false);
     tab = "farm";
@@ -652,7 +703,7 @@ async function action(id: string) {
     sound.effect("craft");
     message(
       item === "dried"
-        ? "三份干草已挂上晾晒架，明日收取。"
+        ? "三份干草已挂上晾晒架，1小时后收取。"
         : `制成 ${ITEMS[item].name} ×3`,
     );
     return;
@@ -676,7 +727,7 @@ async function action(id: string) {
     commit();
     chapterModal();
     sound.effect("harvest");
-    message(`已完成${c.title}，获得${c.reward}灵石、3粒种子。`);
+    message(`已完成${c.title}，获得${c.reward}金币、3张种子券。`);
     return;
   }
   if (id === "visit") {
@@ -701,7 +752,7 @@ async function action(id: string) {
   }
   if (id === "export") {
     download(
-      `灵田异闻-${s.name}-第${s.day}日.json`,
+      `灵田异闻-${s.name}-${new Date(s.lastSeen).toISOString().slice(0, 10)}.json`,
       JSON.stringify(await companion.exportBundle(s), null, 2),
     );
     return;
@@ -717,16 +768,9 @@ async function action(id: string) {
     render();
     return;
   }
-  if (id === "sleep") {
-    nextDay(s);
-    message(
-      `第 ${s.day} 日 · ${weather(s)}。${weather(s) === "雨" ? "雨水已经浇透灵田。" : "山间又是一场好晨光。"}${s.home.drying.some((d) => d.readyOn <= s.day) ? "檐下干草可以收了。" : ""}${visitor(s) ? visitor(s)!.name + "今日会来串门。" : ""}`,
-    );
-  } else if (id === "seed-gift") {
-    if (s.seeds === 0) {
-      s.seeds = 3;
-      message("领到 3 粒基础种子，随时可以重新耕种。");
-    }
+  if (id === "seed-gift") {
+    rescue(s);
+    message("领到一颗青灵草种子。");
   } else if (id === "buy-ore") {
     if (s.coins >= 8) {
       s.coins -= 8;
@@ -739,18 +783,13 @@ async function action(id: string) {
       s.coins += ITEMS[i].price;
     }
   } else if (id === "fertilize") {
-    if (!s.inventory.fertilizer || s.locked.includes("fertilizer"))
-      throw Error("灵壤不足或已锁定");
-    const p = s.plots.find((p) => p.crop && p.stage < CROPS[p.crop].days);
-    if (!p) throw Error("没有需要施肥的作物");
-    s.inventory.fertilizer--;
-    p.stage++;
-    message("灵壤融入田间，作物长大了一些。");
+    fertilize(s);
+    message("灵壤融入田间，生长时间缩短20%。");
   } else if (id === "craft") {
     const item = craft(s);
     message(
       item === "dried"
-        ? "已挂上晾晒架，明日收取。"
+        ? "已挂上晾晒架，1小时后收取。"
         : `制成 ${ITEMS[item].name}`,
     );
     sound.effect("craft");
@@ -763,14 +802,20 @@ async function action(id: string) {
     s.board.fill(null);
   } else if (id === "order") {
     deliver(s);
-    message("委托已完成，灵石与种子已入囊。");
+    message("委托已完成，金币已入囊。");
   } else if (id === "next-order") {
     s.orderIndex = (s.orderIndex + 1) % 3;
   } else if (id === "battle-menu") {
     s.battle = null;
   } else if (id.startsWith("battle-")) {
     const n = Number(id.slice(7));
-    if (n > 0 && !s.tutorial.fought) return;
+    if (
+      !Number.isInteger(n) ||
+      n < 0 ||
+      n >= 60 ||
+      (n > 0 && !s.cleared.includes(n - 1))
+    )
+      throw Error("请先通过前一关");
     s.battle = newBattle(n);
   } else if (id === "question") {
     await syncQuestions();
@@ -842,7 +887,15 @@ document.addEventListener(
 document.addEventListener("click", (e) => {
   const el = (e.target as HTMLElement).closest<HTMLElement>("button");
   if (!el || (el as HTMLButtonElement).disabled || busy) return;
-  void (async () => {
+  if (
+    el.dataset.action &&
+    /^(companion-|open-npc:|study-npc:)/.test(el.dataset.action)
+  ) {
+    void action(el.dataset.action).catch((e) => message(e.message));
+    return;
+  }
+  if (el.closest("#companion-root")) return;
+  void gameTransaction(async () => {
     try {
       if (el.dataset.action) {
         if (
@@ -935,7 +988,7 @@ document.addEventListener("click", (e) => {
     } catch (error) {
       message(error instanceof Error ? error.message : "操作失败");
     }
-  })();
+  });
 });
 // Conversation actions are handled separately to keep the dialogue state stable.
 document.addEventListener("click", (e) => {
@@ -945,20 +998,22 @@ document.addEventListener("click", (e) => {
   if (!el || el.disabled || !save || busy) return;
   const id = el.dataset.action!;
   if (!id.startsWith("chat-") && !id.startsWith("gift-")) return;
-  try {
-    const personId = id.slice(5),
-      p = PEOPLE.find((p) => p.id === personId)!;
-    const text = chat(save, personId, id.startsWith("gift-"));
-    commit();
-    showStory(p.name, text, `assets/v2/person-${PEOPLE.indexOf(p)}-1.webp`);
-  } catch (error) {
-    message((error as Error).message);
-  }
+  void gameTransaction(() => {
+    try {
+      const personId = id.slice(5),
+        p = PEOPLE.find((p) => p.id === personId)!;
+      const text = chat(save!, personId, id.startsWith("gift-"));
+      commit();
+      showStory(p.name, text, `assets/v2/person-${PEOPLE.indexOf(p)}-1.webp`);
+    } catch (error) {
+      message((error as Error).message);
+    }
+  });
 });
 document.addEventListener("submit", (e) => {
   const f = e.target as HTMLFormElement;
   e.preventDefault();
-  void (async () => {
+  void gameTransaction(async () => {
     try {
       if (f.id === "name-form") {
         const name = $<HTMLInputElement>("#player-name").value.trim();
@@ -992,7 +1047,7 @@ document.addEventListener("submit", (e) => {
     } catch (error) {
       message((error as Error).message);
     }
-  })();
+  });
 });
 document.addEventListener("dragstart", (e) => {
   const el = (e.target as HTMLElement).closest<HTMLElement>("[data-item]");
@@ -1006,7 +1061,8 @@ document.addEventListener("drop", (e) => {
   if (!el || !save) return;
   e.preventDefault();
   const item = e.dataTransfer?.getData("text/plain") as Item;
-  if (item in ITEMS) addMaterial(item, Number(el.dataset.cell));
+  if (item in ITEMS)
+    void gameTransaction(() => addMaterial(item, Number(el.dataset.cell)));
 });
 $<HTMLInputElement>("#import-file").addEventListener("change", async (e) => {
   try {
@@ -1037,11 +1093,14 @@ onboarding();
 void syncQuestions().then(() => render());
 setInterval(() => {
   if (dialogKind === "settings") void status();
-  if (save && !busy && !dialogKind)
+  if (save && !busy)
     void syncQuestions()
       .then(async () => {
         if (online && save) {
-          await api("auto", { answered: save!.answered });
+          await api("auto", {
+            answered: save!.answered,
+            reported: save!.reported,
+          });
         }
       })
       .catch(() => {});
@@ -1052,12 +1111,14 @@ document.addEventListener("keydown", (e) => {
   if (!container) return;
   if (e.key === "Escape" && save) {
     e.preventDefault();
-    void action(
-      dialogKind === "question"
-        ? answeredResult === null
-          ? "defer"
-          : "close-result"
-        : "close",
+    void gameTransaction(() =>
+      action(
+        dialogKind === "question"
+          ? answeredResult === null
+            ? "defer"
+            : "close-result"
+          : "close",
+      ),
     ).catch((error) => message(error.message));
   }
   if (e.key === "Tab") {
@@ -1077,3 +1138,76 @@ document.addEventListener("keydown", (e) => {
     }
   }
 });
+
+function sRewarded() {
+  const a = save!.answers.filter((a) => a.day === save!.day);
+  return (
+    a.findIndex((a) => a.id === activeQuestion?.id) >= 0 &&
+    a.findIndex((a) => a.id === activeQuestion?.id) < 5
+  );
+}
+function seedShop() {
+  const s = save!;
+  dialogKind = "seed-shop";
+  modal(
+    `<div class="modal-head"><h2>青禾种子铺</h2>${btn("返回", "close")}</div><p>金币 ${s.coins} · 旧种子券 ${s.seeds} · 每畦收获 ${s.breakthrough ? 3 : 2} 份</p><div class="collection-grid">${Object.entries(
+      CROPS,
+    )
+      .map(
+        ([id, c]) =>
+          `<article>${icon(c.icon + 2)}<h3>${c.name}</h3><p>${HOURS[id as Crop]}小时 · ${PRICES[id as Crop]}金币/颗 · 库存${s.seedStock[id as Crop]}</p>${[1, 5, 10].map((n) => btn("买" + n + "颗", "seed-buy:" + id + ":" + n, "", s.coins < PRICES[id as Crop] * n || (id !== "herb" && !s.tutorial.crafted))).join("")}${btn("兑换一颗", "seed-voucher:" + id + ":1", "", !s.seeds || (id !== "herb" && !s.tutorial.crafted))}</article>`,
+      )
+      .join("")}</div>`,
+    true,
+  );
+}
+function toolShop() {
+  const s = save!;
+  dialogKind = "tool-shop";
+  modal(
+    `<div class="modal-head"><h2>灵砂小铺 · ${s.sand} 灵砂</h2>${btn("返回", "close")}</div><p>每局最多使用一件道具。不提升永久攻击力。</p>${["shuffle", "break", "steps"].map((id, i) => btn(["洗牌符 · 8灵砂", "破障符 · 12灵砂", "续步符 · 20灵砂"][i] + " · 已有" + s.tools[id], "buy-tool:" + id, "", s.sand < [8, 12, 20][i])).join("")}`,
+  );
+}
+function battleHTML(s: import("./model").SaveData) {
+  const b = s.battle;
+  if (!b)
+    return `<div class="campaign paper"><h3>山路试炼 · 已通关 ${s.cleared.length}/60</h3><p>三连攻击 · 四连留下横扫灵纹 · 五连留下同色灵纹。消除其所在组合可发动。每20关进入新章节。</p>${[
+      0, 1, 2,
+    ]
+      .map(
+        (ch) =>
+          `<h4>${["竹径初探", "溪谷寻砂", "云岭试锋"][ch]}</h4><div class="level-grid">${LEVELS.slice(
+            ch * 20,
+            ch * 20 + 20,
+          )
+            .map((l, j) => {
+              const n = ch * 20 + j;
+              return btn(
+                `${n + 1}${l.boss >= 0 ? " · 首领" : ""}${s.cleared.includes(n) ? " ✓" : ""}`,
+                "battle-" + n,
+                l.boss >= 0 ? "boss-level" : "",
+                n > 0 && !s.cleared.includes(n - 1),
+              );
+            })
+            .join("")}</div>`,
+      )
+      .join("")}</div>`;
+  const l = LEVELS[b.level];
+  return `<img class="enemy ${b.status === "won" ? "defeated" : ""} ${b.warning ? "charging" : ""}" src="${l.boss >= 0 ? "assets/v5/boss-" + (l.boss + 1) + ".webp" : "assets/v2/beast.png"}" alt="${l.name}"><div class="enemy-card"><strong>${l.name}</strong><span>气血 ${b.hp} · 余 ${b.moves} 步</span><span>障碍 ${Object.keys(b.blocks).length}${l.collect ? " · 收集 " + Math.min(b.collected, l.collect) + "/" + l.collect : ""}</span>${l.boss >= 0 || l.collect ? `<span>目标灵纹 ${icon(21 + l.kind)}</span>` : ""}<small>${b.notice || "藤蔓需消除其上的灵纹；石障、冰封可通过相邻消除解除"}</small>${b.warning ? "<b>正在蓄力 · 下回合消除3枚目标灵纹打断</b>" : ""}</div>${b.status !== "playing" ? `<div class="battle-result paper"><h3>${b.status === "won" ? "试炼完成" : "暂且歇一歇"}</h3><p>${b.status === "won" ? "奖励已入囊，可继续前行。" : "免费重试，其他进度不受影响。"}</p>${btn(b.status === "won" && b.level < 59 ? "继续下一关" : "重试本关", "battle-" + (b.status === "won" && b.level < 59 ? b.level + 1 : b.level), "primary")}${btn("关卡地图", "battle-menu")}</div>` : ""}`;
+}
+setInterval(() => {
+  if (!save || busy) return;
+  const previousDay = save.day;
+  syncTime(save);
+  if (previousDay !== save.day) render();
+  if (tab === "farm") scene?.show(tab, save, (i) => void handleTile(i));
+}, 1000);
+
+async function gameTransaction<T>(fn: () => T | Promise<T>): Promise<T> {
+  return navigator.locks.request("lingtian-game-state", async () => {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw && save) save = migrate(JSON.parse(raw));
+    if (save) syncTime(save);
+    return fn();
+  });
+}

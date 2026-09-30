@@ -31,6 +31,7 @@ writeFileSync("work/rules/package.json", '{"type":"commonjs"}\n');
 run([
   "--test",
   "tests/rules.cjs",
+  "tests/v05.cjs",
   "tests/chapter.cjs",
   "tests/service.mjs",
   "tests/service-edge.mjs",

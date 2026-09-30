@@ -1,3 +1,4 @@
+import { dayKey } from "../realtime";
 import { WEB_MODE, KEY_LOCATION } from "../runtime";
 import profiles from "../../shared/npcs.json";
 import { PEOPLE } from "../content";
@@ -42,7 +43,7 @@ const uid = () => crypto.randomUUID();
 const minutes = (ms: number) => (ms / 60000).toFixed(1);
 type Hooks = {
   getSave: () => SaveData | null;
-  updateGame: (fn: (s: SaveData) => void) => void;
+  updateGame: (fn: (s: SaveData) => void) => Promise<void>;
   notify: (text: string) => void;
   closeGameModal: () => void;
   onClose: () => void;
@@ -453,7 +454,7 @@ export class Companion {
     }
     if (id === "confirm-romance") {
       const npc = this.npc;
-      this.hooks.updateGame((s) => {
+      await this.hooks.updateGame((s) => {
         if (!canRomance(s, npc)) throw Error("尚未满足关系条件");
         if (!s.companion.romances.includes(npc)) s.companion.romances.push(npc);
       });
@@ -746,7 +747,7 @@ export class Companion {
             status: "running",
             createdAt: now,
             endedAt: 0,
-            gameDay: s.day,
+            gameDay: dayKey(),
             ending: "none",
             endingJobId: "",
             feedback: "",
@@ -844,12 +845,15 @@ export class Companion {
           !existing?.applied &&
           !Object.entries(records).some(
             ([id, r]) =>
-              id !== session.id && r.day === session.gameDay && r.applied,
+              id !== session.id &&
+              r.day === dayKey(session.startedAt) &&
+              r.npcId === session.npcId &&
+              r.applied,
           )
         ) {
           s.affinity[session.npcId] = (s.affinity[session.npcId] ?? 0) + 1;
           records[session.id] = {
-            day: session.gameDay,
+            day: dayKey(session.startedAt),
             npcId: session.npcId,
             applied: true,
           };
@@ -1082,7 +1086,8 @@ export class Companion {
           s.elapsedMs >= 1500000 &&
           !game.companion.rewards[s.id] &&
           !Object.values(game.companion.rewards).some(
-            (r) => r.day === s.gameDay && r.applied,
+            (r) =>
+              r.day === dayKey(s.startedAt) && r.npcId === s.npcId && r.applied,
           ),
       ))
         await this.reward(ended);

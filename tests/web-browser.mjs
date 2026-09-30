@@ -141,7 +141,7 @@ const submit = async (name) => {
 };
 const data = () =>
   page.evaluate(async () => {
-    const s = JSON.parse(localStorage.getItem("lingtian-408-save-v3"));
+    const s = JSON.parse(localStorage.getItem("lingtian-408-save-v4"));
     return new Promise((r) => {
       const o = indexedDB.open("lingtian-companion");
       o.onsuccess = () => {
@@ -315,6 +315,34 @@ try {
   pass(
     "browser question generation, blind solve, review and second-batch dedupe persist independently",
   );
+  // Make the library low on another tab, exercising the actual ten-second scheduler.
+  mode = "fail";
+  const beforeAuto = requests.length;
+  const other = await context.newPage();
+  await other.goto(url);
+  await other.evaluate(
+    (ids) => {
+      const key = "lingtian-408-save-v4";
+      const s = JSON.parse(localStorage.getItem(key));
+      s.answered = ids;
+      localStorage.setItem(key, JSON.stringify(s));
+    },
+    JSON.parse(readFileSync("shared/seeds.json", "utf8")).map((q) => q.id),
+  );
+  await other.close();
+  await waitFor(() =>
+    page
+      .locator("#service-status")
+      .textContent()
+      .then((s) => s.includes("失败") && s.includes("3/3")),
+  );
+  assert.equal(requests.length, beforeAuto + 1);
+  await page.waitForTimeout(11000);
+  assert.equal(requests.length, beforeAuto + 1);
+  pass(
+    "low-stock scheduler starts automatically, counts the third batch and stops after 429",
+  );
+  mode = "normal";
   const secrets = await page.evaluate(async () => {
     const texts = [JSON.stringify(localStorage)];
     for (const { name } of await indexedDB.databases()) {
