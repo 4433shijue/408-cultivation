@@ -144,7 +144,7 @@ try {
   assert.equal((await get()).sand, sand);
   pass("first stage real canvas win, reward and refresh idempotency");
   const fixture = m.newSave("male", "试炼验收");
-  fixture.reducedMotion = true;
+  fixture.reducedMotion = false;
   fixture.tutorial.crafted = true;
   fixture.sand = 100;
   fixture.cleared = Array.from({ length: 60 }, (_, i) => i);
@@ -179,6 +179,7 @@ try {
           img.onerror = r;
         });
     });
+    await page.waitForTimeout(800);
     await page.screenshot({ path: `${out}/boss-${width}.png` });
     await act("tool-shop");
     await act("buy-tool:steps");
@@ -204,6 +205,7 @@ try {
     fixture.battle = b.newBattle(i * 10 + 9);
     await load(fixture);
     await nav("battle");
+    await page.waitForTimeout(800);
     await page.screenshot({ path: `${out}/boss-art-${i + 1}.png` });
     assert.ok(
       await page

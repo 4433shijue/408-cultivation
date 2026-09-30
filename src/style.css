@@ -623,7 +623,7 @@ nav small {
   height: 38%;
   width: 23%;
   object-fit: contain;
-  filter: drop-shadow(0 12px 8px #16382b44);
+  filter: none;
 }
 .enemy.defeated {
   opacity: 0.35;
@@ -1808,7 +1808,7 @@ form > .primary {
   font-size: 13px;
 }
 .enemy.charging {
-  filter: drop-shadow(0 0 16px #e6b846);
+  filter: none;
   animation: boss-breathe 1s infinite alternate;
 }
 .enemy {
