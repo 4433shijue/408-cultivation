@@ -2074,17 +2074,15 @@ form > .primary {
 }
 .chapter-0 {
   background-image:
-    linear-gradient(#36594455, #43665288), url("../public/assets/v2/farm.webp");
+    linear-gradient(#36594455, #43665288), url("/assets/v2/farm.webp");
 }
 .chapter-1 {
   background-image:
-    linear-gradient(#2e626355, #5a7e6588),
-    url("../public/assets/v2/battle.webp");
+    linear-gradient(#2e626355, #5a7e6588), url("/assets/v2/battle.webp");
 }
 .chapter-2 {
   background-image:
-    linear-gradient(#344d6666, #48656a77),
-    url("../public/assets/v2/cultivate.webp");
+    linear-gradient(#344d6666, #48656a77), url("/assets/v2/cultivate.webp");
 }
 .tower-chapter h4 {
   position: absolute;
