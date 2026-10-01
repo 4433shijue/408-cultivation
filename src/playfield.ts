@@ -15,13 +15,21 @@ export class Playfield extends Phaser.Scene {
     super("world");
   }
   preload() {
+    // DOM-only icons do not belong in the canvas preload barrier. Keep the
+    // request queue small on static hosts and slow mobile connections.
+    this.load.maxParallelDownloads = 6;
     this.load.image("board", "assets/v2/ui-3.png");
-    for (let i = 0; i < 52; i++)
+    const canvasIcons = [
+      ...Array.from({ length: 11 }, (_, i) => i),
+      ...Array.from({ length: 5 }, (_, i) => 21 + i),
+      ...Array.from({ length: 9 }, (_, i) => 36 + i),
+    ];
+    for (const i of canvasIcons)
       this.load.image(
         "icon" + i,
         `assets/${i < 36 ? "v2" : "v3"}/icon-${i}.png`,
       );
-    for (let i = 0; i < 8; i++)
+    for (const i of [1, 2, 7])
       this.load.image("fx" + i, `assets/v2/fx-${i}.png`);
   }
   create() {
