@@ -1912,3 +1912,448 @@ form > .primary {
     width: 23%;
   }
 }
+/* Chapter presentation and trial journey, v0.5.1 */
+.name-fields {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+}
+.name-fields label {
+  display: grid;
+  gap: 8px;
+}
+.name-preview {
+  min-height: 1.6em;
+  color: #355d50;
+}
+#name-form,
+#rename-form {
+  display: grid;
+  gap: 16px;
+}
+.modal.cinema-modal {
+  width: calc(100vw - 24px);
+  max-width: none;
+  height: calc(100dvh - 24px);
+  max-height: none;
+  padding: 0;
+  background: #112c29;
+  border: 1px solid #b8a575;
+  overflow: hidden;
+}
+.opening-screen {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 28%);
+  background: radial-gradient(ellipse at 30% 40%, #355e50, #112c29);
+  color: #fff4d5;
+}
+.opening-screen > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  min-height: 0;
+}
+.opening-caption {
+  align-self: center;
+  padding: 24px;
+}
+.opening-caption small {
+  color: #d2c597;
+  letter-spacing: 0.12em;
+}
+.opening-caption h2 {
+  color: #fff4d5;
+}
+.opening-caption p {
+  line-height: 2;
+  font-size: 16px;
+}
+.opening-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+.opening-controls .text-button {
+  color: #e3d8b5;
+}
+.battle-result-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: #102d273d;
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+}
+.battle-result-backdrop .battle-result {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: min(540px, 85%);
+}
+.trial-stamina {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  padding: 8px 12px;
+  background: #f6f0dbea;
+  color: #244b40;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.tower-map {
+  position: absolute;
+  inset: 104px 7% 72px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #b4a06b;
+  border-radius: 14px;
+  background: #edf1dc;
+  box-shadow: 0 12px 30px #143a3255;
+  pointer-events: auto;
+}
+.tower-header {
+  flex-shrink: 0;
+  padding: 12px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #faf6e8;
+  border-bottom: 1px solid #c6b991;
+}
+.tower-header h3 {
+  font-size: 24px;
+  margin: 4px 0;
+}
+.tower-header h3 span {
+  font-size: 14px;
+  color: #6b7756;
+}
+.tower-header p {
+  font-size: 12px;
+  margin: 0;
+}
+.tower-header > div:last-child {
+  display: flex;
+  gap: 10px;
+}
+.tower-scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-color: #81967b #e5e9d6;
+}
+.tower-route {
+  position: relative;
+  background: #d9e5d8;
+}
+.tower-chapter {
+  position: relative;
+  padding: 90px 0 35px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+.tower-chapter::before {
+  content: "";
+  position: absolute;
+  left: calc(50% - 3px);
+  width: 6px;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(#c9b47e, #fff5c8, #c9b47e);
+  box-shadow:
+    0 0 0 8px #faf6d52a,
+    0 0 35px #fffbc3;
+}
+.chapter-0 {
+  background-image:
+    linear-gradient(#36594455, #43665288), url("../public/assets/v2/farm.webp");
+}
+.chapter-1 {
+  background-image:
+    linear-gradient(#2e626355, #5a7e6588),
+    url("../public/assets/v2/battle.webp");
+}
+.chapter-2 {
+  background-image:
+    linear-gradient(#344d6666, #48656a77),
+    url("../public/assets/v2/cultivate.webp");
+}
+.tower-chapter h4 {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid #d6bd80;
+  background: #24483fee;
+  color: #fff4cd;
+  padding: 12px 24px;
+  border-radius: 30px;
+  white-space: nowrap;
+}
+.tower-stop {
+  position: relative;
+  height: 145px;
+  display: flex;
+  justify-content: center;
+  transform: translateX(var(--offset));
+}
+.tower-stop::before {
+  content: "";
+  position: absolute;
+  top: 44px;
+  left: calc(50% - 19%);
+  width: 38%;
+  height: 2px;
+  background: #e6d4a780;
+}
+.tower-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid #d2bb85;
+  background: radial-gradient(#fcf5d8, #c2c8a2);
+  box-shadow:
+    0 7px 0 #46674d,
+    0 12px 20px #12362d70;
+  padding: 7px;
+  overflow: visible;
+  color: #254b40;
+}
+.tower-node img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+.tower-node b {
+  font-size: 20px;
+  line-height: 1;
+}
+.tower-node span {
+  position: absolute;
+  top: 100%;
+  margin-top: 13px;
+  white-space: nowrap;
+  background: #21483edb;
+  color: #fff7db;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+.tower-node:disabled {
+  opacity: 0.75;
+  filter: grayscale(0.8);
+}
+.tower-node.current {
+  outline: 3px solid #ffe6a0;
+  outline-offset: 7px;
+  box-shadow:
+    0 0 35px #ffeec7,
+    0 7px 0 #46674d;
+}
+.tower-node.cleared::after {
+  content: "✓";
+  position: absolute;
+  right: -5px;
+  top: 0;
+  border-radius: 50%;
+  background: #2c6551;
+  color: white;
+  width: 25px;
+  height: 25px;
+}
+.boss-stop {
+  height: 190px;
+}
+.boss-node {
+  width: 118px;
+  height: 118px;
+  border-radius: 24px;
+  background: #e4d5a5;
+}
+.boss-node img {
+  width: 72px;
+  height: 72px;
+}
+.tower-foot {
+  position: relative;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+  line-height: 1.8;
+  background: #f3ead2;
+}
+.tower-map > footer {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 11px;
+  padding: 7px;
+  background: #faf6e8;
+}
+@media (max-height: 550px) {
+  .tower-map {
+    inset: 42px 7% 40px;
+  }
+  .tower-header {
+    padding: 6px 12px;
+  }
+  .tower-header small {
+    display: none;
+  }
+  .tower-header h3 {
+    font-size: 16px;
+    margin: 0;
+  }
+  .tower-header button {
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+  .tower-map > footer {
+    font-size: 10px;
+    padding: 3px;
+  }
+  .trial-stamina {
+    top: 5px;
+    right: 55px;
+    padding: 4px;
+    font-size: 10px;
+  }
+  .opening-screen {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+  .opening-caption {
+    padding: 16px;
+  }
+  .opening-caption p {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .opening-controls {
+    margin-top: 12px;
+    gap: 6px;
+  }
+  .name-fields {
+    gap: 10px;
+  }
+  #name-form,
+  #rename-form {
+    gap: 8px;
+  }
+}
+
+.tower-chapter {
+  background-size: 100% auto;
+  background-repeat: repeat-y;
+}
+.tower-chapter::before,
+.tower-stop::before {
+  display: none;
+}
+.tower-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.tower-trail path {
+  fill: none;
+  stroke-linecap: round;
+}
+.trail-shadow {
+  stroke: #244e42b0;
+  stroke-width: 25;
+}
+.trail-stones {
+  stroke: #ead9a5;
+  stroke-width: 12;
+  stroke-dasharray: 3 14;
+}
+.trial-stamina {
+  right: 82px;
+}
+@media (max-height: 550px) {
+  .trial-stamina {
+    right: 70px;
+  }
+  .tower-chapter {
+    padding-top: 54px;
+    padding-bottom: 21px;
+  }
+  .tower-chapter h4 {
+    top: 8px;
+    padding: 6px 18px;
+    font-size: 12px;
+  }
+  .tower-stop {
+    height: 87px;
+  }
+  .boss-stop {
+    height: 114px;
+  }
+  .tower-node {
+    width: 53px;
+    height: 53px;
+    padding: 3px;
+    border-width: 2px;
+  }
+  .tower-node img {
+    width: 24px;
+    height: 24px;
+  }
+  .tower-node b {
+    font-size: 15px;
+  }
+  .tower-node span {
+    font-size: 9px;
+    margin-top: 8px;
+    padding: 2px 7px;
+  }
+  .boss-node {
+    width: 71px;
+    height: 71px;
+    border-radius: 15px;
+  }
+  .boss-node img {
+    width: 44px;
+    height: 44px;
+  }
+  .tower-node.current {
+    outline-offset: 4px;
+    outline-width: 2px;
+  }
+  .tower-node.cleared::after {
+    width: 17px;
+    height: 17px;
+    font-size: 11px;
+  }
+}
+.scene.map-view #scene-heading,
+.scene.map-view #scene-footer,
+.scene.map-view #side-toggle {
+  display: none;
+}
+.scene.map-view .tower-map {
+  inset: 16px 4%;
+}
+@media (max-height: 550px) {
+  .scene.map-view .tower-map {
+    inset: 7px;
+  }
+  .tower-header > div:last-child {
+    gap: 5px;
+  }
+}

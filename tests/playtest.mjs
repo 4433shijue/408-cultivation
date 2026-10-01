@@ -60,7 +60,7 @@ try {
   await shot("02-gender");
   await page.locator('[data-gender="female"]').click();
   await page.locator("#player-name").fill("青禾");
-  await page.locator("#name-form button").click();
+  await page.locator("#name-form button[type=submit]").click();
   await page.locator('#canvas[data-ready="true"]').waitFor();
   await shot("03-home-1600");
   assert.equal((await state()).gender, "female");
@@ -230,7 +230,7 @@ try {
   await click("gender");
   await page.locator('[data-gender="male"]').click();
   await page.locator("#player-name").fill("归舟");
-  await page.locator("#name-form button").click();
+  await page.locator("#name-form button[type=submit]").click();
   assert.equal((await state()).gender, "male");
   record("male onboarding");
   await page

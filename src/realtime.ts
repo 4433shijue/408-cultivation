@@ -1,3 +1,4 @@
+import { syncStamina } from "./stamina";
 import { CROPS } from "./content";
 import type { Crop } from "./content";
 import type { SaveData, Plot } from "./model";
@@ -29,6 +30,7 @@ export function syncTime(s: SaveData, now = Date.now()) {
   try {
     globalThis.localStorage?.setItem("lingtian-clock-v4", String(s.lastSeen));
   } catch {}
+  syncStamina(s);
   s.day = dayKey(s.lastSeen);
   for (const p of s.plots)
     if (p.crop)

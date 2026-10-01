@@ -1,0 +1,78 @@
+[
+  {
+    "id": "opening-1",
+    "path": "assets/v6/opening-1.webp",
+    "source": "output/imagegen/comic.png",
+    "region": [
+      0,
+      0,
+      764,
+      507
+    ],
+    "width": 764,
+    "height": 507,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "model": "gpt-image-2.5-sunburst",
+    "operation": "crop inspected existing original; no generation request"
+  },
+  {
+    "id": "opening-2",
+    "path": "assets/v6/opening-2.webp",
+    "source": "output/imagegen/comic.png",
+    "region": [
+      774,
+      0,
+      1536,
+      507
+    ],
+    "width": 762,
+    "height": 507,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "model": "gpt-image-2.5-sunburst",
+    "operation": "crop inspected existing original; no generation request"
+  },
+  {
+    "id": "opening-3",
+    "path": "assets/v6/opening-3.webp",
+    "source": "output/imagegen/comic.png",
+    "region": [
+      0,
+      518,
+      764,
+      1024
+    ],
+    "width": 764,
+    "height": 506,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "model": "gpt-image-2.5-sunburst",
+    "operation": "crop inspected existing original; no generation request"
+  },
+  {
+    "id": "opening-4",
+    "path": "assets/v6/opening-4.webp",
+    "source": "output/imagegen/comic.png",
+    "region": [
+      774,
+      518,
+      1536,
+      1024
+    ],
+    "width": 762,
+    "height": 506,
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "model": "gpt-image-2.5-sunburst",
+    "operation": "crop inspected existing original; no generation request"
+  }
+]

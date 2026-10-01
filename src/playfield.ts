@@ -108,6 +108,8 @@ export class Playfield extends Phaser.Scene {
     });
     this.tiles.forEach((t, i) => {
       t.setVisible(tab === "battle" && !!s.battle);
+      if (t.input)
+        t.input.enabled = tab === "battle" && s.battle?.status === "playing";
       const marker = this.markers[i];
       marker.setVisible(
         tab === "battle" &&

@@ -904,6 +904,8 @@ export class Companion {
         minutes: session ? Number(minutes(elapsed(session))) : 0,
         player: {
           name: s.name,
+          surname: s.nameParts?.surname,
+          givenName: s.nameParts?.givenName,
           gender: s.gender,
           affinity: s.affinity[npc] ?? 0,
           romance: s.companion.romances.includes(npc),

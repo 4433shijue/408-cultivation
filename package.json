@@ -1,6 +1,6 @@
 {
   "name": "408xiuxian",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,8 @@
     "build:web": "node scripts/build-web.mjs",
     "test:web": "node tests/web-browser.mjs",
     "test:rules": "node scripts/check-core.mjs",
-    "test:v05": "node tests/v05-browser.mjs"
+    "test:v05": "node tests/v05-browser.mjs",
+    "test:v051": "node tests/v051-browser.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"

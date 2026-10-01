@@ -185,7 +185,7 @@ try {
   await main("gender");
   await page.locator('[data-gender="female"]').click();
   await page.locator("#player-name").fill("网页验收");
-  await page.locator("#name-form button").click();
+  await page.locator("#name-form button[type=submit]").click();
   await page.locator('#canvas[data-ready="true"]').waitFor();
   for (const tab of ["farm", "craft", "battle", "cultivate", "people"]) {
     const button = page.locator(`[data-tab="${tab}"]`);

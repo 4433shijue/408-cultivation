@@ -57,7 +57,7 @@ try {
   await act("gender");
   await page.locator('[data-gender="female"]').click();
   await page.locator("#player-name").fill("田间验收");
-  await page.locator("#name-form button").click();
+  await page.locator("#name-form button[type=submit]").click();
   await page.locator('#canvas[data-ready="true"]').waitFor();
   assert.equal((await get()).version, 4);
   await tile(0, true);

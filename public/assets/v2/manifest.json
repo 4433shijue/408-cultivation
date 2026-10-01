@@ -728,8 +728,8 @@
   {
     "id": "person-0-0",
     "path": "/assets/v2/person-0-0.webp",
-    "width": 407,
-    "height": 429,
+    "width": 405,
+    "height": 406,
     "anchor": [
       0.5,
       0.5
@@ -738,52 +738,52 @@
     "region": [
       0,
       0,
-      407,
-      429
+      405,
+      406
     ],
     "model": "gpt-image-2.5-sunburst"
   },
   {
     "id": "person-0-1",
     "path": "/assets/v2/person-0-1.webp",
-    "width": 408,
-    "height": 429,
+    "width": 399,
+    "height": 406,
     "anchor": [
       0.5,
       0.5
     ],
     "source": "output/imagegen/people.png",
     "region": [
-      407,
+      412,
       0,
-      815,
-      429
+      811,
+      406
     ],
     "model": "gpt-image-2.5-sunburst"
   },
   {
     "id": "person-0-2",
     "path": "/assets/v2/person-0-2.webp",
-    "width": 407,
-    "height": 429,
+    "width": 400,
+    "height": 406,
     "anchor": [
       0.5,
       0.5
     ],
     "source": "output/imagegen/people.png",
     "region": [
-      815,
+      822,
       0,
       1222,
-      429
+      406
     ],
     "model": "gpt-image-2.5-sunburst"
   },
   {
     "id": "person-1-0",
     "path": "/assets/v2/person-1-0.webp",
-    "width": 407,
-    "height": 429,
+    "width": 405,
+    "height": 426,
     "anchor": [
       0.5,
       0.5
@@ -791,53 +791,53 @@
     "source": "output/imagegen/people.png",
     "region": [
       0,
-      429,
-      407,
-      858
+      408,
+      405,
+      834
     ],
     "model": "gpt-image-2.5-sunburst"
   },
   {
     "id": "person-1-1",
     "path": "/assets/v2/person-1-1.webp",
-    "width": 408,
-    "height": 429,
+    "width": 399,
+    "height": 426,
     "anchor": [
       0.5,
       0.5
     ],
     "source": "output/imagegen/people.png",
     "region": [
-      407,
-      429,
-      815,
-      858
+      412,
+      408,
+      811,
+      834
     ],
     "model": "gpt-image-2.5-sunburst"
   },
   {
     "id": "person-1-2",
     "path": "/assets/v2/person-1-2.webp",
-    "width": 407,
-    "height": 429,
+    "width": 400,
+    "height": 426,
     "anchor": [
       0.5,
       0.5
     ],
     "source": "output/imagegen/people.png",
     "region": [
-      815,
-      429,
+      822,
+      408,
       1222,
-      858
+      834
     ],
     "model": "gpt-image-2.5-sunburst"
   },
   {
     "id": "person-2-0",
     "path": "/assets/v2/person-2-0.webp",
-    "width": 407,
-    "height": 429,
+    "width": 405,
+    "height": 451,
     "anchor": [
       0.5,
       0.5
@@ -845,8 +845,8 @@
     "source": "output/imagegen/people.png",
     "region": [
       0,
-      858,
-      407,
+      836,
+      405,
       1287
     ],
     "model": "gpt-image-2.5-sunburst"
@@ -854,17 +854,17 @@
   {
     "id": "person-2-1",
     "path": "/assets/v2/person-2-1.webp",
-    "width": 408,
-    "height": 429,
+    "width": 399,
+    "height": 451,
     "anchor": [
       0.5,
       0.5
     ],
     "source": "output/imagegen/people.png",
     "region": [
-      407,
-      858,
-      815,
+      412,
+      836,
+      811,
       1287
     ],
     "model": "gpt-image-2.5-sunburst"
@@ -872,16 +872,16 @@
   {
     "id": "person-2-2",
     "path": "/assets/v2/person-2-2.webp",
-    "width": 407,
-    "height": 429,
+    "width": 400,
+    "height": 451,
     "anchor": [
       0.5,
       0.5
     ],
     "source": "output/imagegen/people.png",
     "region": [
-      815,
-      858,
+      822,
+      836,
       1222,
       1287
     ],

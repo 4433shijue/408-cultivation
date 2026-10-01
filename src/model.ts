@@ -1,3 +1,5 @@
+import { changeStamina } from "./stamina";
+import { validateName, type PlayerName } from "./identity";
 import {
   syncTime,
   dayKey,
@@ -65,6 +67,9 @@ export type Answer = {
 };
 export type SaveData = {
   version: 4;
+  revision: 1;
+  nameParts: PlayerName | null;
+  stamina: { value: number; at: number };
   lastSeen: number;
   seedStock: Record<Crop, number>;
   sand: number;
@@ -117,6 +122,9 @@ const OLD_KEY = "lingtian-408-save-v1";
 export function newSave(gender: Gender, name: string): SaveData {
   return {
     version: 4,
+    revision: 1,
+    nameParts: null,
+    stamina: { value: 5, at: Date.now() },
     lastSeen: Date.now(),
     seedStock: { herb: 6, lotus: 0, rice: 0, mint: 0, berry: 0, chrys: 0 },
     sand: 0,
@@ -188,6 +196,25 @@ const integer = (v: unknown) => Number.isSafeInteger(v) && Number(v) >= 0;
 export function validateSave(value: unknown): SaveData {
   if (!value || typeof value !== "object") throw Error("存档格式无法识别");
   const s = value as SaveData;
+  if (
+    s.revision !== 1 ||
+    !s.stamina ||
+    !integer(s.stamina.value) ||
+    s.stamina.value > 5 ||
+    !integer(s.stamina.at)
+  )
+    throw Error("体力记录无效");
+  if (s.nameParts !== null) {
+    if (
+      !s.nameParts ||
+      typeof s.nameParts.surname !== "string" ||
+      typeof s.nameParts.givenName !== "string"
+    )
+      throw Error("姓名记录无效");
+    const parts = validateName(s.nameParts.surname, s.nameParts.givenName);
+    if (parts.surname + parts.givenName !== s.name)
+      throw Error("姓名记录不一致");
+  }
   if (
     !s.companion ||
     typeof s.companion.profileId !== "string" ||
@@ -395,15 +422,27 @@ export function validateSave(value: unknown): SaveData {
   }
   return s;
 }
+function upgradeIdentity(s: any): SaveData {
+  if (s.revision === undefined) {
+    s.revision = 1;
+    s.nameParts = null;
+    s.stamina = { value: 5, at: s.lastSeen };
+    // A loss from before stamina existed must never be charged retroactively.
+    if (s.battle?.status === "lost" && !s.settled.includes(s.battle.id))
+      s.settled.push(s.battle.id);
+  }
+  return s;
+}
 export function migrate(value: unknown): SaveData {
   const old = structuredClone(value) as Record<string, any>;
   if (!old || typeof old !== "object") throw Error("存档格式无效");
   if (old.version === 4) {
-    const s = validateSave(old);
+    const s = validateSave(upgradeIdentity(old));
     syncTime(s);
     return s;
   }
-  if (old.version === 3) return validateSave(upgradeTime(structuredClone(old)));
+  if (old.version === 3)
+    return validateSave(upgradeIdentity(upgradeTime(structuredClone(old))));
   if (old.version === 2) {
     const next = {
       ...old,
@@ -424,7 +463,7 @@ export function migrate(value: unknown): SaveData {
       ] as Item[])
         if (next.inventory[id] === undefined) next.inventory[id] = 0;
     }
-    return validateSave(upgradeTime(next));
+    return validateSave(upgradeIdentity(upgradeTime(next)));
   }
   if (old.version !== 1) throw Error("不支持此存档版本");
   const s = newSave(old.gender, old.name);
@@ -454,7 +493,7 @@ export function migrate(value: unknown): SaveData {
   s.battle = old.battle
     ? { ...old.battle, level: 0, rewarded: old.battle.status === "won" }
     : null;
-  return validateSave(upgradeTime(s));
+  return validateSave(upgradeIdentity(upgradeTime(s)));
 }
 export function loadSave(): { save: SaveData | null; error: string | null } {
   try {
@@ -463,6 +502,11 @@ export function loadSave(): { save: SaveData | null; error: string | null } {
       const value = JSON.parse(raw);
       if (value.home === undefined)
         localStorage.setItem(`${SAVE_KEY}-before-homestead`, raw);
+      if (
+        value.revision === undefined &&
+        !localStorage.getItem(`${SAVE_KEY}-before-identity-stamina`)
+      )
+        localStorage.setItem(`${SAVE_KEY}-before-identity-stamina`, raw);
       const save = migrate(value);
       persist(save);
       return { save, error: null };
@@ -613,7 +657,10 @@ export function rewardBattle(s: SaveData) {
     first = !s.cleared.includes(b.level);
   s.sand += first ? l.sand : l.repeat;
   s.inventory.ore += l.reward;
-  if (first) s.cleared.push(b.level);
+  if (first) {
+    s.cleared.push(b.level);
+    changeStamina(s, 1);
+  }
   s.tutorial.fought = true;
   return true;
 }

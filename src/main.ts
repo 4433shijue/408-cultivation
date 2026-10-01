@@ -1,3 +1,7 @@
+import { randomName, validateName } from "./identity";
+import { startTrial } from "./trials";
+import { settleFailure, staminaLabel } from "./stamina";
+import { campaignHTML } from "./campaign";
 import {
   HOURS,
   PRICES,
@@ -31,7 +35,7 @@ import type { Facility } from "./progression";
 import { sound } from "./audio";
 import Phaser from "phaser";
 import { Playfield } from "./playfield";
-import { newBattle, selectBattleTile } from "./battle";
+import { selectBattleTile } from "./battle";
 import { CROPS, ITEMS, LEVELS, ORDERS, PEOPLE, RECIPES } from "./content";
 import type { Crop, Gender, Item, Tab } from "./content";
 import {
@@ -56,6 +60,9 @@ const loaded = loadSave();
 let save = loaded.save;
 let tab: Tab = "farm";
 let busy = false;
+let battleMap = false;
+let introFrame = 0;
+let pendingTrial: { level: number; id: string } | null = null;
 let scene: Playfield | null = null;
 let selectedGender: Gender = "female";
 let selectedAnswer = -1;
@@ -188,6 +195,7 @@ function goal() {
               : (CHAPTER[save.home.chapter]?.hint ?? "泉暖青禾 · 首章已完成");
 }
 function render() {
+  const mapScroll = document.querySelector(".tower-scroll")?.scrollTop;
   const s = save;
   if (s) syncTime(s);
   document.body.classList.toggle("reduced-motion", s?.reducedMotion ?? false);
@@ -206,19 +214,30 @@ function render() {
     (s && weather(s) === "雨" && ["farm", "people", "battle"].includes(tab)
       ? " rainy"
       : "");
+  $("#scene").classList.toggle(
+    "map-view",
+    tab === "battle" && !!s && (battleMap || !s.battle),
+  );
   if (s) sound.weather(weather(s) === "雨");
   const t = tabs.find((t) => t.id === tab)!;
   $("#scene-heading").innerHTML =
     `<small>青禾村 / ${t.name}</small><h2>${t.name}</h2><p>${tab === "farm" ? (s && weather(s) === "雨" ? "雨落檐前，九畦同润。" : "晨露未晞，草木正好。") : tab === "battle" ? "六十关试炼，循山风而行。" : tab === "craft" ? "把田间的收获，做成日子的滋味。" : tab === "cultivate" ? "世人听风，你听见另一种答案。" : "山水之间，总有人记得你。"}</p>`;
   $("#canvas").classList.toggle(
     "inactive",
-    !s || !["farm", "battle"].includes(tab),
+    !s ||
+      !["farm", "battle"].includes(tab) ||
+      (tab === "battle" && (battleMap || !s.battle)),
   );
   if (s)
-    scene?.show(tab, s, (i) => {
+    scene?.show(tab === "battle" && battleMap ? "cultivate" : tab, s, (i) => {
       void handleTile(i);
     });
   $("#scene-content").innerHTML = s ? sceneHTML() : "";
+  const map = document.querySelector<HTMLElement>(".tower-scroll");
+  if (map) {
+    if (mapScroll !== undefined) map.scrollTop = mapScroll;
+    else focusTower();
+  }
   $("#scene-footer").innerHTML = s ? footerHTML() : "";
   $("#sidebar").innerHTML = s
     ? sidebarHTML()
@@ -250,7 +269,7 @@ function footerHTML() {
   if (tab === "farm")
     return `<div class="farm-tools">${btn(icon(CROPS[s.selectedCrop].icon + 2) + CROPS[s.selectedCrop].name + " · 换种", "crops", "chosen")}${btn("家园修缮", "home")}${btn("引泉浇田", "water-all", "", !s.home.facilities.spring)}${btn("施灵壤", "fertilize", "", s.inventory.fertilizer === 0)}${btn("种子商店", "seed-shop", "primary")}</div>`;
   if (tab === "battle")
-    return `<div class="farm-tools">${btn("关卡地图", "battle-menu")}${btn("灵砂商店", "tool-shop")}${s.battle?.status === "playing" ? ["shuffle", "break", "steps"].map((id, i) => btn(["洗牌符", "破障符", "续步符"][i] + " ×" + s.tools[id], "use-tool:" + id, "", s.battle!.toolUsed || !s.tools[id])).join("") : ""}</div>`;
+    return `<div class="farm-tools">${btn("关卡地图", "battle-menu")}${btn("灵砂商店", "tool-shop")}${s.battle?.status === "playing" && !battleMap ? ["shuffle", "break", "steps"].map((id, i) => btn(["洗牌符", "破障符", "续步符"][i] + " ×" + s.tools[id], "use-tool:" + id, "", s.battle!.toolUsed || !s.tools[id])).join("") : ""}</div>`;
   return "";
 }
 function sidebarHTML() {
@@ -381,20 +400,42 @@ function showStory(title: string, text: string, portrait?: string) {
     `${portrait ? `<img class="dialog-portrait" src="${portrait}" alt="道友">` : ""}<small>灵田异闻 · 此间相逢</small><h2>${esc(title)}</h2><p class="story-text">${esc(text)}</p>${btn("记在心里", "close", "primary")}`,
   );
 }
+function nameForm(edit: boolean) {
+  const parts = edit ? save?.nameParts : null;
+  return `<form id="${edit ? "rename-form" : "name-form"}"><div class="name-fields"><label>姓 · 可留空<input id="player-surname" name="surname" maxlength="4" autocomplete="off" value="${esc(parts?.surname ?? "")}" placeholder="例如：沈、欧阳"></label><label>名<input id="player-name" name="givenName" maxlength="8" required autocomplete="off" value="${esc(parts?.givenName ?? "")}" placeholder="例如：时珏"></label></div><p class="name-preview" aria-live="polite">${edit ? "当前姓名：" + esc(save?.name) : "写下此界的新名字"}</p><div class="button-row"><button type="button" data-action="random-name">随机姓名</button><button type="button" data-action="random-given">只随机名</button></div><button class="primary" type="submit">${edit ? "保存姓名" : "走进青禾村"}</button></form>`;
+}
+function focusTower() {
+  const map = document.querySelector<HTMLElement>(".tower-scroll");
+  const node = map?.querySelector<HTMLElement>(".tower-node.current");
+  if (map && node)
+    map.scrollTop +=
+      node.getBoundingClientRect().top -
+      map.getBoundingClientRect().top -
+      map.clientHeight / 2 +
+      node.clientHeight / 2;
+}
 function onboarding() {
-  if (dialogKind === "intro")
+  if (dialogKind === "intro") {
+    const titles = ["灯下未眠", "书中异光", "一步入画", "山风拂晓"];
+    const captions = [
+      "窗外的灯一盏盏熄了，桌上的题还剩最后一道。你翻过一页，纸间忽然透出微光。",
+      "青绿的光沿着书页游走。那些熟悉的字迹，竟渐渐化作了山川。",
+      "指尖碰到光的那一刻，风从书中涌来。纸上的山水，忽然近在眼前。",
+      "再睁眼时，远山浮在晨雾里，院中传来鸡鸣。有人隔着篱笆问：你醒啦？",
+    ];
     modal(
-      `<small>序章 / 那道不该出现的题</small><h2>一梦入青禾</h2><img class="opening-comic" src="assets/v2/comic.webp" alt="深夜读书、书页发光、触碰穿越、醒在灵田四格漫画"><p>书页间忽然亮起陌生的光。再睁眼时，山风已吹过指尖。</p>${btn("继续", "gender", "primary")}`,
+      `<section class="opening-screen"><img src="assets/v6/opening-${introFrame + 1}.webp" alt="${titles[introFrame]}"><div class="opening-caption"><small>序章 · ${introFrame + 1} / 4</small><h2>${titles[introFrame]}</h2><p>${captions[introFrame]}</p><div class="opening-controls">${btn("上一幕", "intro-prev", "", introFrame === 0)}${btn(introFrame === 3 ? "在此醒来" : "继续", "intro-next", "primary")}${btn("跳过序章", "gender", "text-button")}</div></div></section>`,
       true,
     );
-  else if (dialogKind === "gender")
+    document.querySelector(".modal")?.classList.add("cinema-modal");
+  } else if (dialogKind === "gender")
     modal(
       `<small>异世来客</small><h2>以谁的模样醒来？</h2><div class="gender-options"><button data-gender="female"><img src="assets/v2/hero-female.png" alt="女主角"><strong>女主角</strong></button><button data-gender="male"><img src="assets/v2/hero-male.png" alt="男主角"><strong>男主角</strong></button></div><p>形象决定外观与称谓，不限制你对谁心动。</p>`,
       true,
     );
   else if (dialogKind === "name")
     modal(
-      `<small>此界的新名字</small><h2>村人该如何称呼你？</h2><form id="name-form"><label for="player-name">名字 · 1 至 12 字</label><input id="player-name" maxlength="12" required autocomplete="off" placeholder="写下你的名字"><button class="primary" type="submit">走进青禾村</button></form>${btn("返回选角", "gender", "text-button")}`,
+      `<small>此界的新名字</small><h2>村人该如何称呼你？</h2>${nameForm(false)}${btn("返回选角", "gender", "text-button")}`,
     );
   else if (dialogKind === "recovery")
     modal(
@@ -450,7 +491,7 @@ function showHistory(pending = false) {
 async function settings() {
   dialogKind = "settings";
   modal(
-    `<div class="modal-head"><h2>山居设置</h2>${btn("返回", "close", "text-button")}</div><div class="settings-grid"><section><h3>进度与体验</h3><p>进度保存在当前浏览器。更换浏览器前请导出。</p><div class="button-row">${btn("导出存档", "export")}${btn("导入存档", "import")}</div>${btn(save?.reducedMotion ? "恢复动态效果" : "减少动态效果", "motion")}${btn(save?.home.sound ? "关闭环境音效" : "开启环境音效", "sound")}${btn("AI 道友设置", "companion-config")}${btn("课程与共修", "companion-setup")}${btn("删除存档并重开", "reset", "danger")}<hr><h3>题库与批次</h3><div id="service-status">${WEB_MODE ? "正在读取浏览器题库…" : "正在连接本机服务…"}</div><div class="button-row">${btn("生成一批", "generate")}${btn("停止生成", "cancel-generation")}</div><div class="button-row">${btn("导出题库", "export-questions")}${btn("人工抽检", "review-questions")}</div></section><section><h3>AI 题库接口</h3><p>未配置也能使用 24 道基础题。每批最多 10 道，每次${WEB_MODE ? "页面" : "服务"}会话最多 3 批；调用可能产生费用。${WEB_MODE ? "网页版由你的浏览器直连所填接口，需支持HTTPS和跨域；刷新后重新填写密钥。" : ""}</p><form id="api-form"><label>兼容接口地址<input name="baseUrl" type="url" required placeholder="https://你的服务/v1"></label><label>文本模型<input name="model" required placeholder="填写文本模型标识"></label><label>密钥 · 只在${KEY_LOCATION}保存<input name="key" type="password" required autocomplete="off"></label><label class="checkbox"><input name="auto" type="checkbox" checked> 可用新题少于 10 道时自动补充</label><button class="primary" type="submit">保存本次会话配置</button></form><div class="button-row">${btn("测试连接", "test-api")}${btn("清除密钥", "clear-key")}</div></section></div>`,
+    `<div class="modal-head"><h2>山居设置</h2>${btn("返回", "close", "text-button")}</div><div class="settings-grid"><section><h3>进度与体验</h3>${save ? btn("修改姓名 · " + esc(save.name), "rename") : ""}<p>进度保存在当前浏览器。更换浏览器前请导出。</p><div class="button-row">${btn("导出存档", "export")}${btn("导入存档", "import")}</div>${btn(save?.reducedMotion ? "恢复动态效果" : "减少动态效果", "motion")}${btn(save?.home.sound ? "关闭环境音效" : "开启环境音效", "sound")}${btn("AI 道友设置", "companion-config")}${btn("课程与共修", "companion-setup")}${btn("删除存档并重开", "reset", "danger")}<hr><h3>题库与批次</h3><div id="service-status">${WEB_MODE ? "正在读取浏览器题库…" : "正在连接本机服务…"}</div><div class="button-row">${btn("生成一批", "generate")}${btn("停止生成", "cancel-generation")}</div><div class="button-row">${btn("导出题库", "export-questions")}${btn("人工抽检", "review-questions")}</div></section><section><h3>AI 题库接口</h3><p>未配置也能使用 24 道基础题。每批最多 10 道，每次${WEB_MODE ? "页面" : "服务"}会话最多 3 批；调用可能产生费用。${WEB_MODE ? "网页版由你的浏览器直连所填接口，需支持HTTPS和跨域；刷新后重新填写密钥。" : ""}</p><form id="api-form"><label>兼容接口地址<input name="baseUrl" type="url" required placeholder="https://你的服务/v1"></label><label>文本模型<input name="model" required placeholder="填写文本模型标识"></label><label>密钥 · 只在${KEY_LOCATION}保存<input name="key" type="password" required autocomplete="off"></label><label class="checkbox"><input name="auto" type="checkbox" checked> 可用新题少于 10 道时自动补充</label><button class="primary" type="submit">保存本次会话配置</button></form><div class="button-row">${btn("测试连接", "test-api")}${btn("清除密钥", "clear-key")}</div></section></div>`,
     true,
   );
   await status();
@@ -517,7 +558,11 @@ async function handleTileUnlocked(index: number) {
     scene?.pulse(index, harvest);
     sound.effect(harvest ? "harvest" : "water");
     commit();
-  } else if (tab === "battle" && save.battle) {
+  } else if (
+    tab === "battle" &&
+    !battleMap &&
+    save.battle?.status === "playing"
+  ) {
     const b = save.battle,
       first = b.selected;
     const result = selectBattleTile(b, index);
@@ -526,6 +571,8 @@ async function handleTileUnlocked(index: number) {
       if (first !== null && first !== index && result !== "selected")
         await scene?.exchange(first, index, result !== "invalid");
       if (rewardBattle(save)) message("试炼完成，灵砂与关卡奖励已入行囊。");
+      else if (settleFailure(save))
+        message("本次试炼未通过，体力 −1。进度已保存。");
       else if (result === "invalid") message("未连成三枚，交换已退回。");
       commit();
       if (result === "matched" || result === "won") scene?.drop();
@@ -552,6 +599,46 @@ function addMaterial(item: Item, index: number) {
 }
 async function action(id: string) {
   if (busy) return;
+  if (id === "intro-next" || id === "intro-prev") {
+    if (id === "intro-next" && introFrame === 3) dialogKind = "gender";
+    else
+      introFrame = Math.max(
+        0,
+        Math.min(3, introFrame + (id === "intro-next" ? 1 : -1)),
+      );
+    onboarding();
+    return;
+  }
+  if (id === "random-name" || id === "random-given") {
+    const surname = $<HTMLInputElement>("#player-surname");
+    const parts = randomName(id === "random-given" ? surname.value : undefined);
+    if (id === "random-name") surname.value = parts.surname;
+    $<HTMLInputElement>("#player-name").value = parts.givenName;
+    $(".name-preview").textContent =
+      "此界姓名：" + surname.value + parts.givenName;
+    return;
+  }
+  if (id === "rename") {
+    dialogKind = "rename";
+    modal(
+      `<div class="modal-head"><h2>此界的姓名</h2>${btn("返回设置", "settings")}</div><p>随时可以改名，不影响进度。确认恋爱后，道友可只叫你的名；旧故事保留当时的称呼。</p>${save?.nameParts ? "" : "<p>旧存档没有区分姓与名，请亲自填写，原名会保留到你保存为止。</p>"}${nameForm(true)}`,
+    );
+    return;
+  }
+  if (id === "tower-focus") {
+    focusTower();
+    return;
+  }
+  if (id === "abandon-trial" && pendingTrial && save) {
+    const pending = pendingTrial;
+    pendingTrial = null;
+    const started = startTrial(save, pending.level, pending.id);
+    battleMap = !started;
+    closeModal();
+    commit();
+    if (!started) message("体力已用完，恢复后再来。种田与学习照常进行。");
+    return;
+  }
   if (id.startsWith("companion-")) {
     await companion.open(undefined, id.slice(10));
     return;
@@ -806,17 +893,23 @@ async function action(id: string) {
   } else if (id === "next-order") {
     s.orderIndex = (s.orderIndex + 1) % 3;
   } else if (id === "battle-menu") {
-    s.battle = null;
+    battleMap = true;
   } else if (id.startsWith("battle-")) {
     const n = Number(id.slice(7));
-    if (
-      !Number.isInteger(n) ||
-      n < 0 ||
-      n >= 60 ||
-      (n > 0 && !s.cleared.includes(n - 1))
-    )
-      throw Error("请先通过前一关");
-    s.battle = newBattle(n);
+    if (s.battle?.status === "playing" && s.battle.level !== n) {
+      pendingTrial = { level: n, id: s.battle.id };
+      dialogKind = "abandon";
+      modal(
+        `<h2>先放下这场试炼？</h2><p>第${s.battle.level + 1}关仍在进行。切回地图不会丢进度；放弃本局会扣1点体力，再开启所选关卡。${s.stamina.value <= 1 ? "扣除后体力不足，需要等恢复才能开始。" : ""}</p>${btn("放弃本局 · 扣1点体力", "abandon-trial", "danger")}${btn("保留本局", "close")}`,
+      );
+      return;
+    }
+    const started = startTrial(s, n);
+    if (started === false) {
+      message("体力不足。每小时恢复1点，种田、聊天和学习照常进行。");
+      return;
+    }
+    battleMap = false;
   } else if (id === "question") {
     await syncQuestions();
     openQuestion();
@@ -1016,13 +1109,26 @@ document.addEventListener("submit", (e) => {
   void gameTransaction(async () => {
     try {
       if (f.id === "name-form") {
-        const name = $<HTMLInputElement>("#player-name").value.trim();
-        if (!name || name.length > 12) throw Error("名字需要 1 至 12 字");
-        save = newSave(selectedGender, name);
+        const parts = validateName(
+          $<HTMLInputElement>("#player-surname").value,
+          $<HTMLInputElement>("#player-name").value,
+        );
+        save = newSave(selectedGender, parts.surname + parts.givenName);
+        save.nameParts = parts;
         closeModal();
         commit();
         await syncQuestions();
         render();
+      } else if (f.id === "rename-form" && save) {
+        const parts = validateName(
+          $<HTMLInputElement>("#player-surname").value,
+          $<HTMLInputElement>("#player-name").value,
+        );
+        save.nameParts = parts;
+        save.name = parts.surname + parts.givenName;
+        commit();
+        message("姓名已更新，下次交谈会使用新称呼。");
+        await settings();
       } else if (f.id === "api-form") {
         const d = new FormData(f);
         await api("config", {
@@ -1170,36 +1276,20 @@ function toolShop() {
 }
 function battleHTML(s: import("./model").SaveData) {
   const b = s.battle;
-  if (!b)
-    return `<div class="campaign paper"><h3>山路试炼 · 已通关 ${s.cleared.length}/60</h3><p>三连攻击 · 四连留下横扫灵纹 · 五连留下同色灵纹。消除其所在组合可发动。每20关进入新章节。</p>${[
-      0, 1, 2,
-    ]
-      .map(
-        (ch) =>
-          `<h4>${["竹径初探", "溪谷寻砂", "云岭试锋"][ch]}</h4><div class="level-grid">${LEVELS.slice(
-            ch * 20,
-            ch * 20 + 20,
-          )
-            .map((l, j) => {
-              const n = ch * 20 + j;
-              return btn(
-                `${n + 1}${l.boss >= 0 ? " · 首领" : ""}${s.cleared.includes(n) ? " ✓" : ""}`,
-                "battle-" + n,
-                l.boss >= 0 ? "boss-level" : "",
-                n > 0 && !s.cleared.includes(n - 1),
-              );
-            })
-            .join("")}</div>`,
-      )
-      .join("")}</div>`;
+  if (!b || battleMap) return campaignHTML(s);
   const l = LEVELS[b.level];
-  return `<img class="enemy ${b.status === "won" ? "defeated" : ""} ${b.warning ? "charging" : ""}" src="${l.boss >= 0 ? "assets/v5/boss-" + (l.boss + 1) + ".webp" : "assets/v2/beast.png"}" alt="${l.name}"><div class="enemy-card"><strong>${l.name}</strong><span>气血 ${b.hp} · 余 ${b.moves} 步</span><span>障碍 ${Object.keys(b.blocks).length}${l.collect ? " · 收集 " + Math.min(b.collected, l.collect) + "/" + l.collect : ""}</span>${l.boss >= 0 || l.collect ? `<span>目标灵纹 ${icon(21 + l.kind)}</span>` : ""}<small>${b.notice || "藤蔓需消除其上的灵纹；石障、冰封可通过相邻消除解除"}</small>${b.warning ? "<b>正在蓄力 · 下回合消除3枚目标灵纹打断</b>" : ""}</div>${b.status !== "playing" ? `<div class="battle-result paper"><h3>${b.status === "won" ? "试炼完成" : "暂且歇一歇"}</h3><p>${b.status === "won" ? "奖励已入囊，可继续前行。" : "免费重试，其他进度不受影响。"}</p>${btn(b.status === "won" && b.level < 59 ? "继续下一关" : "重试本关", "battle-" + (b.status === "won" && b.level < 59 ? b.level + 1 : b.level), "primary")}${btn("关卡地图", "battle-menu")}</div>` : ""}`;
+  return `<div class="trial-stamina" data-stamina>${staminaLabel(s)}</div><img class="enemy ${b.status === "won" ? "defeated" : ""} ${b.warning ? "charging" : ""}" src="${l.boss >= 0 ? "assets/v5/boss-" + (l.boss + 1) + ".webp" : "assets/v2/beast.png"}" alt="${l.name}"><div class="enemy-card"><strong>${l.name}</strong><span>气血 ${b.hp} · 余 ${b.moves} 步</span><span>障碍 ${Object.keys(b.blocks).length}${l.collect ? " · 收集 " + Math.min(b.collected, l.collect) + "/" + l.collect : ""}</span>${l.boss >= 0 || l.collect ? `<span>目标灵纹 ${icon(21 + l.kind)}</span>` : ""}<small>${b.notice || "藤蔓需消除其上的灵纹；石障、冰封可通过相邻消除解除"}</small>${b.warning ? "<b>正在蓄力 · 下回合消除3枚目标灵纹打断</b>" : ""}</div>${b.status !== "playing" ? `<div class="battle-result-backdrop"><div class="battle-result paper"><h3>${b.status === "won" ? (b.level === 59 ? "六十关试炼通关" : "试炼完成") : "暂且歇一歇"}</h3><p>${b.status === "won" ? "奖励已入囊。首次通关恢复1点体力，上限5点。" : "本局已结束，体力扣除一次。恢复体力后可继续挑战。"}</p>${btn(b.status === "won" && b.level < 59 ? "继续下一关" : b.status === "won" ? "重游本关" : "重试本关", "battle-" + (b.status === "won" && b.level < 59 ? b.level + 1 : b.level), "primary")}${btn("关卡地图", "battle-menu")}</div></div>` : ""}`;
 }
 setInterval(() => {
   if (!save || busy) return;
   const previousDay = save.day;
+  const previousStamina = save.stamina.value;
   syncTime(save);
-  if (previousDay !== save.day) render();
+  if (previousDay !== save.day || previousStamina !== save.stamina.value)
+    render();
+  document
+    .querySelectorAll("[data-stamina]")
+    .forEach((el) => (el.textContent = staminaLabel(save!)));
   if (tab === "farm") scene?.show(tab, save, (i) => void handleTile(i));
 }, 1000);
 
@@ -1211,3 +1301,19 @@ async function gameTransaction<T>(fn: () => T | Promise<T>): Promise<T> {
     return fn();
   });
 }
+
+document.addEventListener("input", (e) => {
+  const el = e.target as HTMLInputElement;
+  if (el.id === "player-name" || el.id === "player-surname") {
+    $(".name-preview").textContent =
+      "此界姓名：" +
+      $<HTMLInputElement>("#player-surname").value +
+      $<HTMLInputElement>("#player-name").value;
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (dialogKind !== "intro" || !["ArrowRight", "ArrowLeft"].includes(e.key))
+    return;
+  e.preventDefault();
+  void action(e.key === "ArrowRight" ? "intro-next" : "intro-prev");
+});
